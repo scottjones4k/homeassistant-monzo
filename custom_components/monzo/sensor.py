@@ -49,12 +49,13 @@ class BalanceSensor(SensorEntity):
         self._monzo_client = monzo_client
         self._account = account
         self._balance = balance
-        self._mask = account['account_number'][-5:]
+        self._mask = account['account_number'][-4:]
         
         self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._mask}-balance")
-        self._attr_name = f"{self._mask} Balance"
+        self._attr_name = f"Monzo {self._mask} Balance"
         self._attr_unique_id = self.entity_id
         self._attr_state_class = SensorStateClass.TOTAL
+        self._attr_suggested_display_precision = 2
 
         self._state = self._balance['balance']/100
         self._unit_of_measurement = self._balance['currency']
