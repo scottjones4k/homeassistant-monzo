@@ -47,7 +47,7 @@ class BalanceSensor(SensorEntity):
         """Initialize the sensor."""
         self._monzo_data = monzo_data
         self._account = account
-        self._balance = monzo_data.balances[self.account['id']]
+        self._balance = monzo_data.balances[account['id']]
         self._mask = account['account_number'][-4:]
         
         self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._mask}-balance")
