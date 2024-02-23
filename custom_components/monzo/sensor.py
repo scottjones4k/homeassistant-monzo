@@ -87,9 +87,8 @@ class BalanceSensor(SensorEntity):
             'Mask': self._mask,
         }
 
-    def update(self):
+    async def async_update(self):
         """Get the latest state of the sensor."""
-        self._plaid_data.update()
         self._balance = await self._monzo_client.get_balance(self._account['id'])
 
         self._state = self._balance['balance']/100
