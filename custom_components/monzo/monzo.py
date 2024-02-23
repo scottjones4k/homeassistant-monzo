@@ -1,4 +1,5 @@
 from aiohttp import ClientSession
+from abc import abstractmethod
 
 class AbstractAuth:
     def __init__(self, websession: ClientSession, host: str):
