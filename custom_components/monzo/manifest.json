@@ -1,0 +1,12 @@
+{
+    "domain": "monzo",
+    "name": "Monzo",
+    "documentation": "",
+    "requirements": ["aiohttp==3.9.3"],
+    "codeowners": [],
+    "version": "1.0.0",
+    "iot_class": "cloud_polling",
+    "loggers": ["monzo"],
+    "dependencies": ["application_credentials"],
+    "config_flow": true
+  }

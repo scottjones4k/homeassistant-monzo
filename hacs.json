@@ -1,0 +1,7 @@
+{
+    "name": "Monzo Custom Component",
+    "render_readme": true,
+    "domains": [
+      "sensor"
+    ]
+  }
