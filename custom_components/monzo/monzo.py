@@ -1,4 +1,4 @@
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientResponse
 from abc import abstractmethod
 
 class AbstractAuth:
