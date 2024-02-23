@@ -13,7 +13,7 @@ from .const import (
     DOMAIN
 )
 
-from .monzo import MonzoClient
+from .monzo_data import MonzoData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,25 +30,24 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Monzo sensor platform."""
-    instance: MonzoClient = hass.data[DOMAIN][config_entry.entry_id]["client"]
+    instance: MonzoData = hass.data[DOMAIN][config_entry.entry_id]["client"]
 
     entities: list[SensorEntity] = []
 
-    for account in await instance.get_accounts():
-        if 'account_number' in account:
-            balance = await instance.get_balance(account['id'])
-            entities.append(BalanceSensor(instance, account, balance))
+    await instance.async_update()
+    for account in await instance.accounts:
+        entities.append(BalanceSensor(instance, account))
     async_add_entities(entities)
 
 
 class BalanceSensor(SensorEntity):
     """Representation of a Monzo sensor."""
 
-    def __init__(self, monzo_client, account, balance):
+    def __init__(self, monzo_data, account):
         """Initialize the sensor."""
-        self._monzo_client = monzo_client
+        self._monzo_data = monzo_data
         self._account = account
-        self._balance = balance
+        self._balance = monzo_data.balances[self.account['id']]
         self._mask = account['account_number'][-4:]
         
         self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._mask}-balance")
@@ -90,7 +89,8 @@ class BalanceSensor(SensorEntity):
 
     async def async_update(self):
         """Get the latest state of the sensor."""
-        self._balance = await self._monzo_client.get_balance(self._account['id'])
+        await self._monzo_data.async_update()
+        self._balance = self._monzo_data.balances[self._account['id']]
 
         self._state = self._balance['balance']/100
         self._unit_of_measurement = self._balance['currency']
