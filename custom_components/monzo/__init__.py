@@ -8,6 +8,7 @@ from homeassistant.helpers import aiohttp_client, config_entry_oauth2_flow
 
 from . import api
 from .const import DOMAIN, API_ENDPOINT
+from .monzo import MonzoClient
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
