@@ -2,7 +2,7 @@ from aiohttp import ClientSession, ClientResponse
 from abc import abstractmethod
 
 class AbstractAuth:
-    def __init__(self, websession: ClientSession, host: str):
+    def __init__(self, websession: ClientSession):
         """Initialize the auth."""
         self._websession = websession
 

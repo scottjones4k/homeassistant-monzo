@@ -7,7 +7,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import aiohttp_client, config_entry_oauth2_flow
 
 from . import api
-from .const import DOMAIN
+from .const import DOMAIN, API_ENDPOINT
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
@@ -28,7 +28,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
-        "client": MonzoClient(auth)
+        "client": MonzoClient(auth, API_ENDPOINT)
     }
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
