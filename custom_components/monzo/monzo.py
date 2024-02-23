@@ -24,10 +24,10 @@ class MonzoClient:
         else:
             headers = dict(headers)
 
-        access_token = await self.async_get_access_token()
+        access_token = await self._auth.async_get_access_token()
         headers["authorization"] = f"Bearer {access_token}"
 
-        return await self._websession.request(
+        return await self._auth._websession.request(
             method, f"{self._host}/{url}", **kwargs, headers=headers,
         )
 
