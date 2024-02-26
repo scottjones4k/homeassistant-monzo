@@ -9,12 +9,13 @@ from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from abc import abstractmethod
 from .const import (
     DOMAIN
 )
 
 from .monzo_data import MonzoData
-from .models import BalanceModel, PotModel
+from .models import AccountModel, BalanceModel, PotModel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ async def async_setup_entry(
     await instance.async_update()
     for account in instance.accounts:
         entities.append(BalanceSensor(instance, account))
-        for pot in instance.pots[account['id']]:
+        for pot in instance.pots[account.id]:
             entities.append(PotSensor(instance, pot))
     async_add_entities(entities)
 
@@ -49,8 +50,8 @@ class MonzoSensor(SensorEntity):
     def __init__(self, monzo_data, account):
         """Initialize the sensor."""
         self._monzo_data = monzo_data
-        self._account_id = account['id']
-        self._mask = account['account_number'][-4:]
+        self._account_id = account.id
+        self._mask = account.mask
         
         self._attr_state_class = SensorStateClass.TOTAL
         self._attr_suggested_display_precision = 2
@@ -80,12 +81,18 @@ class MonzoSensor(SensorEntity):
         """Return the state attributes of the sensor."""
         return {
             ATTR_ATTRIBUTION: ATTRIBUTION,
-            'Mask': self._mask,
+            'Account Mask': self._mask,
         }
 
     async def async_update(self):
         """Get the latest state of the sensor."""
         await self._monzo_data.async_update()
+        self.update_balance()
+        self._state = self._balance.balance/100
+
+    @abstractmethod
+    def update_balance(self):
+        """Updates self._balance"""
 
 class BalanceSensor(MonzoSensor):
     """Representation of a Balance sensor."""
@@ -102,34 +109,24 @@ class BalanceSensor(MonzoSensor):
         self._state = self._balance.balance/100
         self._unit_of_measurement = self._balance.currency
 
-    async def async_update(self):
-        """Get the latest state of the sensor."""
-        await super().async_update()
+    def update_balance(self):
         self._balance = self._monzo_data.balances[self._account_id]
-
-        self._state = self._balance.balance/100
-        self._unit_of_measurement = self._balance.currency
 
 class PotSensor(MonzoSensor):
     """Representation of a Pot sensor."""
 
     def __init__(self, monzo_data, pot: PotModel):
         """Initialize the sensor."""
-        account = next(a for a in monzo_data.accounts if a['id'] == pot.account_id)
+        account = next(a for a in monzo_data.accounts if a.id == pot.account_id)
         super().__init__(monzo_data, account)
-        self._pot: PotModel = pot
+        self._balance: PotModel = pot
         
-        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._pot.name}-pot")
-        self._attr_name = f"Monzo {self._pot.name} Pot"
+        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._balance.name}-pot")
+        self._attr_name = f"Monzo {self._balance.name} Pot"
         self._attr_unique_id = self.entity_id
 
-        self._state = self._pot.balance/100
-        self._unit_of_measurement = self._pot.currency
+        self._state = self._balance.balance/100
+        self._unit_of_measurement = self._balance.currency
 
-    async def async_update(self):
-        """Get the latest state of the sensor."""
-        await super().async_update()
-        self._pot: PotModel = next(p for p in self._monzo_data.pots[self._pot.account_id] if p.id == self._pot.id)
-
-        self._state = self._pot.balance/100
-        self._unit_of_measurement = self._pot.currency
+    def update_balance(self):
+        self._balance: PotModel = next(p for p in self._monzo_data.pots[self._balance.account_id] if p.id == self._balance.id)

@@ -1,6 +1,8 @@
 from aiohttp import ClientSession, ClientResponse
 from abc import abstractmethod
 
+from .models import AccountModel, BalanceModel, PotModel
+
 class AbstractAuth:
     def __init__(self, websession: ClientSession):
         """Initialize the auth."""
@@ -34,14 +36,17 @@ class MonzoClient:
     async def get_accounts(self):
         resp = await self.make_request("GET", "accounts")
         data = await resp.json()
-        return data['accounts']
+        accountModels = [AccountModel(a) for a in data['accounts'] if 'account_number' in a]
+        return accountModels
 
     async def get_balance(self, account_id):
         resp = await self.make_request("GET", f"balance?account_id={account_id}")
-        balance = await resp.json()
-        return balance
+        data = await resp.json()
+        balanceModel = BalanceModel(account_id, data)
+        return balanceModel
 
     async def get_pots(self, account_id):
         resp = await self.make_request("GET", f"pots?current_account_id={account_id}")
-        pots = await resp.json()
-        return pots['pots']
+        data = await resp.json()
+        potsModel = [PotModel(account_id, pot) for pot in data['pots']]
+        return potsModel

@@ -4,7 +4,6 @@ from homeassistant.util import Throttle
 
 from .const import DOMAIN, API_ENDPOINT
 from .monzo import MonzoClient
-from .models import BalanceModel, PotModel
 
 MIN_TIME_BETWEEN_ACCOUNT_UPDATES = timedelta(minutes=30)
 MIN_TIME_BETWEEN_BALANCE_UPDATES = timedelta(minutes=5)
@@ -24,15 +23,14 @@ class MonzoData:
 
     @Throttle(MIN_TIME_BETWEEN_ACCOUNT_UPDATES)
     async def async_update_accounts(self):
-        self.accounts = [a for a in await self._monzo_client.get_accounts() if 'account_number' in a]
+        self.accounts = await self._monzo_client.get_accounts()
 
     @Throttle(MIN_TIME_BETWEEN_BALANCE_UPDATES)
     async def async_update_balances(self):
         for account in self.accounts:
-            self.balances[account['id']] = BalanceModel(account, await self._monzo_client.get_balance(account['id']))
+            self.balances[account.id] = await self._monzo_client.get_balance(account.id)
 
     @Throttle(MIN_TIME_BETWEEN_BALANCE_UPDATES)
     async def async_update_pots(self):
         for account in self.accounts:
-            pots = await self._monzo_client.get_pots(account['id'])
-            self.pots[account['id']] = list(map(lambda pot: PotModel(account, pot), pots))
+            self.pots[account.id] = await self._monzo_client.get_pots(account.id)
