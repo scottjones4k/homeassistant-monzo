@@ -129,7 +129,7 @@ class PotSensor(MonzoSensor):
     async def async_update(self):
         """Get the latest state of the sensor."""
         await super().async_update()
-        self._pot: PotModel = next(p for p in monzo_data.pots if p.id == pot.id)
+        self._pot: PotModel = next(p for p in self._monzo_data.pots if p.id == pot.id)
 
         self._state = self._pot.balance/100
         self._unit_of_measurement = self._pot.currency
