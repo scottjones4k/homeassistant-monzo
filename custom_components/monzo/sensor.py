@@ -115,7 +115,7 @@ class PotSensor(MonzoSensor):
 
     def __init__(self, monzo_data, pot: PotModel):
         """Initialize the sensor."""
-        account = next(a for a in monzo_data.accounts if a['id'] == pot['current_account_id'])
+        account = next(a for a in monzo_data.accounts if a['id'] == pot.account_id)
         super().__init__(monzo_data, account)
         self._pot: PotModel = pot
         
