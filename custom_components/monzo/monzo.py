@@ -40,3 +40,8 @@ class MonzoClient:
         resp = await self.make_request("GET", f"balance?account_id={account_id}")
         balance = await resp.json()
         return balance
+
+    async def get_pots(self, account_id):
+        resp = await self.make_request("GET", f"pots?current_account_id={account_id}")
+        pots = await resp.json()
+        return pots['pots']
