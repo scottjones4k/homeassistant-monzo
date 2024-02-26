@@ -2,7 +2,7 @@ class AccountModel():
     id: str
     mask: str
 
-    def _init__(self, account):
+    def __init__(self, account):
         self.id = account['id']
         self.mask = account['account_number'][-4:]
 
