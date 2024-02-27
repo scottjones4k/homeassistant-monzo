@@ -29,7 +29,7 @@ ATTRIBUTION = "Data provided by Monzo"
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Monzo event entities."""
