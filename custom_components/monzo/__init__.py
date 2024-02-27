@@ -79,6 +79,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     webhook.async_unregister(hass, entry.data[CONF_WEBHOOK_ID])
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        hass.data[DOMAIN].pop(entry.entry_id)
+        config = hass.data[DOMAIN].pop(entry.entry_id)
+        client = config["client"]
+        for account in client.accounts:
+            await client.unregister_webhook(account.id)
 
     return unload_ok

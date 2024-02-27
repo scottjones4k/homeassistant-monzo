@@ -6,6 +6,16 @@ class AccountModel():
         self.id = account['id']
         self.mask = account['account_number'][-4:]
 
+class WebhookModel():
+    id: str
+    account_id: str
+    url: str
+
+    def __init__(self, webhook):
+        self.id = webhook['id']
+        self.account_id = webhook['account_id']
+        self.url = webhook['url']
+
 class BaseMonzoModel():
     account_id: str
     balance: float

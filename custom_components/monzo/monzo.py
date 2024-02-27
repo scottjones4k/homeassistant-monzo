@@ -1,8 +1,8 @@
-from aiohttp import ClientSession, ClientResponse, FormData
+from aiohttp import ClientSession, ClientResponse
 from abc import abstractmethod
 import logging
 
-from .models import AccountModel, BalanceModel, PotModel
+from .models import AccountModel, BalanceModel, PotModel, WebhookModel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -54,11 +54,29 @@ class MonzoClient:
         potsModel = [PotModel(account_id, pot) for pot in data['pots']]
         return potsModel
 
+    async def get_webhooks(self, account_id):
+        resp = await self.make_request("GET", f"webhooks?account_id={account_id}")
+        data = await resp.json()
+        hooksModel = [WebhookModel(hook) for hook in data['webhooks']]
+        return hooksModel
+
     async def register_webhook(self, account_id, url):
+        existing = await get_webhooks(account_id)
+        foundHooks = [w for w in existing if w.account_id == account_id and w.url == url]
+        if any(foundHooks):
+            _LOGGER.debug("Found existing Monzo account webhook: %s : %s", account_id, url)
+            return foundHooks[0]
         _LOGGER.debug("Registering Monzo account webhook: %s : %s", account_id, url)
         postData = { 'account_id': account_id, 'url': url}
-        resp = await self.make_request("POST", f"webhooks", data=FormData(postData))
+        resp = await self.make_request("POST", f"webhooks", data=postData)
         data = await resp.json()
-        _LOGGER.debug("Registered Monzo account webhook using form data: %s", str(data))
+        _LOGGER.debug("Registered Monzo account webhook using data: %s", str(data))
+        return WebhookModel(data)
+
+    async def unregister_webhook(self, webhook_id):
+        _LOGGER.debug("Unregistering Monzo account webhook: %s : %s", webhook_id)
+        resp = await self.make_request("DELETE", f"webhooks/{webhook_id}")
+        data = await resp.json()
+        _LOGGER.debug("Unregistered Monzo account webhook using data: %s", str(data))
         return data
 

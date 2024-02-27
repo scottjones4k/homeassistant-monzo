@@ -20,7 +20,7 @@ class MonzoData:
         await self.async_update_accounts()
         await self.async_update_balances()
         await self.async_update_pots()
-        pass
+        await self.async_update_webhooks()
 
     @Throttle(MIN_TIME_BETWEEN_ACCOUNT_UPDATES)
     async def async_update_accounts(self):
@@ -36,5 +36,14 @@ class MonzoData:
         for account in self.accounts:
             self.pots[account.id] = await self._monzo_client.get_pots(account.id)
 
+    @Throttle(MIN_TIME_BETWEEN_ACCOUNT_UPDATES)
+    async def async_update_webhooks(self):
+        for account in self.accounts:
+            self.pots[account.id] = await self._monzo_client.get_webhooks(account.id)
+
     async def register_webhook(self, account_id, url):
         self.webhooks[account_id] = await self._monzo_client.register_webhook(account_id, url)
+
+    async def unregister_webhook(self, account_id):
+        webhook_id = self.webhooks[account_id].id
+        await self._monzo_client.unregister_webhook(webhook_id)
