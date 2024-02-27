@@ -39,8 +39,8 @@ async def async_setup_entry(
     await instance.async_update()
     for account in instance.accounts:
         entities.append(BalanceSensor(instance, account))
-        for pot in instance.pots[account.id]:
-            entities.append(PotSensor(instance, pot))
+        #for pot in instance.pots[account.id]:
+        #    entities.append(PotSensor(instance, pot))
     async_add_entities(entities)
 
 

@@ -33,7 +33,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Monzo event entities."""
-    instance = hass.data[DOMAIN][entry.entry_id]
+    instance: MonzoData = hass.data[DOMAIN][config_entry.entry_id]["client"]
 
     entities: list[MonzoTransactionEventEntity] = []
 
