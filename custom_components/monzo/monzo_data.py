@@ -37,4 +37,4 @@ class MonzoData:
             self.pots[account.id] = await self._monzo_client.get_pots(account.id)
 
     async def register_webhook(self, account_id, url):
-        self.pots[account_id] = await self._monzo_client.register_webhook(account_id, url)
+        self.webhooks[account_id] = await self._monzo_client.register_webhook(account_id, url)
