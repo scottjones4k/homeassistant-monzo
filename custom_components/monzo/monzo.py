@@ -61,7 +61,7 @@ class MonzoClient:
         return hooksModel
 
     async def register_webhook(self, account_id, url):
-        existing = await get_webhooks(account_id)
+        existing = await self.get_webhooks(account_id)
         foundHooks = [w for w in existing if w.account_id == account_id and w.url == url]
         if any(foundHooks):
             _LOGGER.debug("Found existing Monzo account webhook: %s : %s", account_id, url)
