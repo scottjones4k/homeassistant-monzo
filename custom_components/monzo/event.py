@@ -10,7 +10,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from .const import (
-    DOMAIN
+    DOMAIN,
+    WEBHOOK_UPDATE
 )
 
 from homeassistant.components.event import (
