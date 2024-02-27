@@ -1,4 +1,4 @@
-from aiohttp import ClientSession, ClientResponse
+from aiohttp import ClientSession, ClientResponse, FormData
 from abc import abstractmethod
 import logging
 
@@ -57,8 +57,8 @@ class MonzoClient:
     async def register_webhook(self, account_id, url):
         _LOGGER.debug("Registering Monzo account webhook: %s : %s", account_id, url)
         postData = { 'account_id': account_id, 'url': url}
-        resp = await self.make_request("POST", f"webhooks", data=postData)
+        resp = await self.make_request("POST", f"webhooks", data=FormData(postData))
         data = await resp.json()
-        _LOGGER.debug("Registered Monzo account webhook using data: %s", str(data))
+        _LOGGER.debug("Registered Monzo account webhook using form data: %s", str(data))
         return data
 
