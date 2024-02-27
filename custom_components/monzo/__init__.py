@@ -58,7 +58,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         data = {**entry.data, CONF_WEBHOOK_ID: secrets.token_hex()}
         hass.config_entries.async_update_entry(entry, data=data)
 
-    webhook_url = webhook_generate_url(hass, entry.data[CONF_WEBHOOK_ID])
+    webhook_url = webhook.async_generate_url(hass, entry.data[CONF_WEBHOOK_ID])
     webhook.async_register(
         hass, DOMAIN, "Monzo", entry.data[CONF_WEBHOOK_ID], handle_webhook
     )
