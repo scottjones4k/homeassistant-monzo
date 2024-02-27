@@ -71,7 +71,7 @@ class MonzoClient:
         resp = await self.make_request("POST", f"webhooks", data=postData)
         data = await resp.json()
         _LOGGER.debug("Registered Monzo account webhook using data: %s", str(data))
-        return WebhookModel(data)
+        return WebhookModel(data['webhook'])
 
     async def unregister_webhook(self, webhook_id):
         _LOGGER.debug("Unregistering Monzo account webhook: %s : %s", webhook_id)
