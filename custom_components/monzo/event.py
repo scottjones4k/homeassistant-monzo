@@ -9,8 +9,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
-    DOMAIN,
-    API_ACCOUNT_ID
+    DOMAIN
 )
 
 from homeassistant.components.event import (
