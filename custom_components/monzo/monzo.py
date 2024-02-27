@@ -50,3 +50,10 @@ class MonzoClient:
         data = await resp.json()
         potsModel = [PotModel(account_id, pot) for pot in data['pots']]
         return potsModel
+
+    async def register_webhook(self, account_id, url):
+        postData = { 'account_id': account_id, 'url': url}
+        resp = await self.make_request("POST", f"webhooks", json=postData)
+        data = await resp.json()
+        return data
+

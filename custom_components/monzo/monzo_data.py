@@ -14,6 +14,7 @@ class MonzoData:
         self.accounts = []
         self.balances = {}
         self.pots = {}
+        self.webhooks = {}
 
     async def async_update(self):
         await self.async_update_accounts()
@@ -34,3 +35,6 @@ class MonzoData:
     async def async_update_pots(self):
         for account in self.accounts:
             self.pots[account.id] = await self._monzo_client.get_pots(account.id)
+
+    async def register_webhook(self, account_id, url):
+        self.pots[account.id] = await self._monzo_client.register_webhook(account_id, url)
