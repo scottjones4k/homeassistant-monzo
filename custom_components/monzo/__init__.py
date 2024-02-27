@@ -31,7 +31,7 @@ async def handle_webhook(hass, webhook_id, request):
         data['type'],
         data['data']
     )
-    _LOGGER.info("Received Monzo webhook: %s", account_id)
+    _LOGGER.warn("Received Monzo webhook: %s", account_id)
     return web.Response(text=f"Logged")
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -66,7 +66,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await client.async_update()
     for account in client.accounts:
         await client.register_webhook(account.id, webhook_url)
-    _LOGGER.info("Registered Monzo webhook: %s", webhook_url)
+    _LOGGER.warn("Registered Monzo webhook: %s", webhook_url)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
