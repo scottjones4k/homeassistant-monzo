@@ -1,5 +1,6 @@
 from aiohttp import ClientSession, ClientResponse
 from abc import abstractmethod
+import logging
 
 from .models import AccountModel, BalanceModel, PotModel
 
@@ -52,8 +53,10 @@ class MonzoClient:
         return potsModel
 
     async def register_webhook(self, account_id, url):
+        _LOGGER.debug("Registering Monzo account webhook: %s : %s", account_id, url)
         postData = { 'account_id': account_id, 'url': url}
         resp = await self.make_request("POST", f"webhooks", json=postData)
         data = await resp.json()
+        _LOGGER.debug("Registered Monzo account webhook: %s", str(data))
         return data
 
