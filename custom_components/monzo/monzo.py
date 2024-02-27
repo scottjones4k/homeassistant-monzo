@@ -4,6 +4,8 @@ import logging
 
 from .models import AccountModel, BalanceModel, PotModel
 
+_LOGGER = logging.getLogger(__name__)
+
 class AbstractAuth:
     def __init__(self, websession: ClientSession):
         """Initialize the auth."""
