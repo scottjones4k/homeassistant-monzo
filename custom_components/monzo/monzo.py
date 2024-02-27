@@ -31,7 +31,6 @@ class MonzoClient:
 
         access_token = await self._auth.async_get_access_token()
         headers["authorization"] = f"Bearer {access_token}"
-        _LOGGER.debug("Registering Monzo account token: %s", access_token)
 
         return await self._auth._websession.request(
             method, f"{self._host}/{url}", **kwargs, headers=headers,

@@ -56,7 +56,7 @@ class MonzoTransactionEventEntity(EventEntity):
         self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{account.mask}-transactions")
 
         self._attr_name = f"Monzo {account.mask} Transactions"
-        self._attr_event_types = ['transaction.created']
+        self._attr_event_types = ['transaction.created', 'transaction.updated']
         self._attr_unique_id = self.entity_id
 
     async def async_added_to_hass(self) -> None:
@@ -74,7 +74,7 @@ class MonzoTransactionEventEntity(EventEntity):
 
     @callback
     async def _async_receive_data(self, event_type, transaction) -> None:
-        _LOGGER.info("Transaction event fired %s: %s", event_type, self._account_id)
+        _LOGGER.debug("Transaction event received %s: %s", event_type, str(transaction))
         if transaction['account_id'] == self._account_id:
             self._trigger_event(event_type, map_transaction(transaction))
             self.schedule_update_ha_state()
