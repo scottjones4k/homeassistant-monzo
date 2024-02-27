@@ -10,6 +10,7 @@ from homeassistant.const import Platform, CONF_WEBHOOK_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import aiohttp_client, config_entry_oauth2_flow
 from homeassistant.components import webhook
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 
 from . import api
 from .const import DOMAIN, API_ENDPOINT, WEBHOOK_UPDATE
