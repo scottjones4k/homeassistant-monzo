@@ -75,7 +75,7 @@ class MonzoTransactionEventEntity(EventEntity):
     @callback
     async def _async_receive_data(self, event_type, transaction) -> None:
         _LOGGER.info("Transaction event fired %s: %s", event_type, self._account_id)
-        if transaction.account_id == self._account_id:
+        if transaction['account_id'] == self._account_id:
             self._trigger_event(event_type, map_transaction(transaction))
             self.schedule_update_ha_state()
 
