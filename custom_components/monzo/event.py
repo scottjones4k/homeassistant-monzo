@@ -90,8 +90,8 @@ def map_transaction(transaction):
         case _:
             _LOGGER.warn("Unknown transaction scheme: %s", transaction['scheme'])
             transaction_type = 'Unknown'
-    android_pay = transaction_type = 'Card Payment' and transaction['metadata'].get('tokenization_method') == 'android_pay'
-    is_roundup = transaction_type = 'Pot Deposit' and transaction['metadata'].get('trigger') == 'coin_jar'
+    android_pay = transaction_type == 'Card Payment' and transaction['metadata'].get('tokenization_method') == 'android_pay'
+    is_roundup = transaction_type == 'Pot Deposit' and transaction['metadata'].get('trigger') == 'coin_jar'
     pot_id = transaction['metadata'].get('pot_id')
     incoming = transaction['amount'] > 0
     return {
