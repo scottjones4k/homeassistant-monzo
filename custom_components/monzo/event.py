@@ -75,15 +75,35 @@ class MonzoTransactionEventEntity(EventEntity):
     @callback
     async def _async_receive_data(self, event_type, transaction) -> None:
         _LOGGER.debug("Transaction event received %s: %s", event_type, str(transaction))
-        if transaction['account_id'] == self._account_id:
+        if transaction['account_id'] == self._account_id and event_type == 'transaction.created':
             self._trigger_event(event_type, map_transaction(transaction))
             self.schedule_update_ha_state()
 
 def map_transaction(transaction):
+    match transaction['scheme']:
+        case 'mastercard':
+            transaction_type = 'Card Payment'
+        case 'payport_faster_payments':
+            transaction_type = 'Faster Payment'
+        case 'uk_retail_pot':
+            transaction_type = 'Pot Deposit'
+        case _:
+            _LOGGER.warn("Unknown transaction scheme: %s", transaction['scheme'])
+            transaction_type = 'Unknown'
+    android_pay = transaction_type = 'Card Payment' and transaction['metadata'].get('tokenization_method') == 'android_pay'
+    is_roundup = transaction_type = 'Pot Deposit' and transaction['metadata'].get('trigger') == 'coin_jar'
+    pot_id = transaction['metadata'].get('pot_id')
+    incoming = transaction['amount'] > 0
     return {
-        'Amount': transaction['amount'],
+        'Incoming': incoming,
+        'Amount': abs(transaction['amount']/100),
         'Description': transaction['description'],
         'Currency': transaction['currency'],
         'Date Time': transaction['created'],
-        'Transaction Id': transaction['id']
+        'Transaction Id': transaction['id'],
+        'Account Id': transaction['account_id'],
+        'Transaction Type': transaction_type,
+        'Android Pay': android_pay,
+        'Is Roundup': is_roundup,
+        'Pot Id': pot_id
     }
