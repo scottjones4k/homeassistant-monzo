@@ -10,3 +10,6 @@ API_ENDPOINT = "https://api.monzo.com"
 CONF_CLOUDHOOK_URL = "cloudhook_url"
 
 WEBHOOK_UPDATE = f"{DOMAIN}_webhook_update"
+
+SERVICE_POT_DEPOSIT = "pot_deposit"
+SERVICE_POT_WITHDRAW = "pot_withdraw"

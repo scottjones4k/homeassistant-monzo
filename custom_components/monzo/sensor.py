@@ -2,16 +2,20 @@
 from __future__ import annotations
 
 import logging
+import voluptuous as vol
 
 from homeassistant.components.sensor import SensorEntity, SensorStateClass, ENTITY_ID_FORMAT
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
+from homeassistant.helpers import entity_platform
+from homeassistant.exceptions import HomeAssistantError
 from abc import abstractmethod
 from .const import (
-    DOMAIN
+    DOMAIN,
+    SERVICE_POT_DEPOSIT,
+    SERVICE_POT_WITHDRAW
 )
 
 from .monzo_data import MonzoData
@@ -43,6 +47,15 @@ async def async_setup_entry(
             entities.append(PotSensor(instance, pot))
     async_add_entities(entities)
 
+    platform = entity_platform.async_get_current_platform()
+
+    platform.async_register_entity_service(
+        SERVICE_POT_DEPOSIT,
+        {
+            vol.Required('amount_in_minor_units'): vol.All(vol.Coerce(int), vol.Range(0, 65535)),
+        },
+        "pot_deposit",
+    )
 
 class MonzoSensor(SensorEntity):
     """Representation of a Monzo sensor."""
@@ -94,6 +107,10 @@ class MonzoSensor(SensorEntity):
     def update_balance(self):
         """Updates self._balance"""
 
+    @abstractmethod
+    def pot_deposit(self, amount: int | None = None):
+        """Deposit into pot"""
+
 class BalanceSensor(MonzoSensor):
     """Representation of a Balance sensor."""
 
@@ -111,6 +128,9 @@ class BalanceSensor(MonzoSensor):
 
     def update_balance(self):
         self._balance = self._monzo_data.balances[self._account_id]
+
+    def pot_deposit(self, amount: int | None = None):
+        raise HomeAssistantError("supported only on Pot sensors")
 
 class PotSensor(MonzoSensor):
     """Representation of a Pot sensor."""
@@ -130,3 +150,8 @@ class PotSensor(MonzoSensor):
 
     def update_balance(self):
         self._balance: PotModel = next(p for p in self._monzo_data.pots[self._balance.account_id] if p.id == self._balance.id)
+
+    def pot_deposit(self, amount: int | None = None):
+        new_pot = self._monzo_data.deposit_pot(self._account_id, self._balance.id, amount)
+        self._balance = new_pot
+        self._state = self._balance.balance/100

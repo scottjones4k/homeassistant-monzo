@@ -1,6 +1,7 @@
 from aiohttp import ClientSession, ClientResponse
 from abc import abstractmethod
 import logging
+import secrets
 
 from .models import AccountModel, BalanceModel, PotModel, WebhookModel
 
@@ -79,4 +80,12 @@ class MonzoClient:
         data = await resp.json()
         _LOGGER.debug("Unregistered Monzo account webhook using data: %s", str(data))
         return data
+
+    async def deposit_pot(self, account_id: str, pot_id: str, amount: int):
+        _LOGGER.debug("Depositing into pot: %s", pot_id)
+        postData = { 'source_account_id': account_id, 'amount': amount, 'dedupe_id': secrets.token_hex()}
+        resp = await self.make_request("PUT", f"pots/{pot_id}/deposit", data=postData)
+        data = await resp.json()
+        _LOGGER.debug("Deposit success", str(data))
+        return PotModel(account_id, data)
 

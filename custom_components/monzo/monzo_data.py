@@ -47,3 +47,9 @@ class MonzoData:
     async def unregister_webhook(self, account_id):
         webhook_id = self.webhooks[account_id].id
         await self._monzo_client.unregister_webhook(webhook_id)
+
+    async def deposit_pot(self, account_id: str, pot_id: str, amount: int):
+        new_pot = await self._monzo_client.deposit_pot(account_id, pot_id, amount)
+        pot = next(a for a in self.pots if a.id == pot.id)
+        pot.balance = new_pot.balance
+        return new_pot
