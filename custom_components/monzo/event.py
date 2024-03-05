@@ -110,7 +110,7 @@ def map_transaction(monzo_data,transaction):
         'Account Id': transaction['account_id'],
         'Notes': transaction['metadata'].get('notes'),
         'Triggered By': transaction['metadata'].get('triggered_by'),
-        'Android Pay': transaction['metadata'].get('tokenization_method') == 'android_pay'
+        'Android Pay': transaction['metadata'].get('tokenization_method') == 'android_pay',
         'Transaction Type': transaction_type,
         'Is Roundup': transaction['metadata'].get('trigger') == 'coin_jar',
         'Pot Id': pot_id,
