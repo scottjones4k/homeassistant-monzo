@@ -89,3 +89,11 @@ class MonzoClient:
         _LOGGER.debug("Deposit success: %s", str(data))
         return PotModel(account_id, data)
 
+    async def withdraw_pot(self, account_id: str, pot_id: str, amount: int):
+        _LOGGER.debug("Depositing into pot: %s", pot_id)
+        postData = { 'destination_account_id': account_id, 'amount': amount, 'dedupe_id': secrets.token_hex()}
+        resp = await self.make_request("PUT", f"pots/{pot_id}/withdraw", data=postData)
+        data = await resp.json()
+        _LOGGER.debug("Deposit success: %s", str(data))
+        return PotModel(account_id, data)
+

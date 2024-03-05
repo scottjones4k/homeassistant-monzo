@@ -53,3 +53,9 @@ class MonzoData:
         pot = next(a for a in self.pots[account_id] if a.id == new_pot.id)
         pot.balance = new_pot.balance
         return new_pot
+
+    async def withdraw_pot(self, account_id: str, pot_id: str, amount: int):
+        new_pot = await self._monzo_client.withdraw_pot(account_id, pot_id, amount)
+        pot = next(a for a in self.pots[account_id] if a.id == new_pot.id)
+        pot.balance = new_pot.balance
+        return new_pot

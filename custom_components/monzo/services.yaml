@@ -10,3 +10,15 @@ pot_deposit:
         number:
           min: 0
           max: 65536
+pot_withdraw:
+  target:
+    entity:
+      integration: monzo
+      domain: sensor
+  fields:
+    amount_in_minor_units:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 65536

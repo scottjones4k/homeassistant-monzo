@@ -29,6 +29,9 @@ DEFAULT_COIN_ICON = "mdi:cash"
 
 ATTRIBUTION = "Data provided by Monzo"
 
+POT_SERVICE_SCHEMA = {
+    vol.Required('amount_in_minor_units'): vol.All(vol.Coerce(int), vol.Range(0, 65535)),
+}
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -51,10 +54,14 @@ async def async_setup_entry(
 
     platform.async_register_entity_service(
         SERVICE_POT_DEPOSIT,
-        {
-            vol.Required('amount_in_minor_units'): vol.All(vol.Coerce(int), vol.Range(0, 65535)),
-        },
+        POT_SERVICE_SCHEMA,
         "pot_deposit",
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_POT_WITHDRAW,
+        POT_SERVICE_SCHEMA,
+        "pot_withdraw",
     )
 
 class MonzoSensor(SensorEntity):
@@ -132,6 +139,9 @@ class BalanceSensor(MonzoSensor):
     async def pot_deposit(self, amount_in_minor_units: int | None = None):
         raise HomeAssistantError("supported only on Pot sensors")
 
+    async def pot_withdraw(self, amount_in_minor_units: int | None = None):
+        raise HomeAssistantError("supported only on Pot sensors")
+
 class PotSensor(MonzoSensor):
     """Representation of a Pot sensor."""
 
@@ -153,5 +163,10 @@ class PotSensor(MonzoSensor):
 
     async def pot_deposit(self, amount_in_minor_units: int | None = None):
         new_pot = await self._monzo_data.deposit_pot(self._account_id, self._balance.id, amount_in_minor_units)
+        self._balance = new_pot
+        self._state = self._balance.balance/100
+
+    async def pot_withdraw(self, amount_in_minor_units: int | None = None):
+        new_pot = await self._monzo_data.withdraw_pot(self._account_id, self._balance.id, amount_in_minor_units)
         self._balance = new_pot
         self._state = self._balance.balance/100
