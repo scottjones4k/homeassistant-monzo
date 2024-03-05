@@ -108,7 +108,7 @@ class MonzoSensor(SensorEntity):
         """Updates self._balance"""
 
     @abstractmethod
-    def pot_deposit(self, amount_in_minor_units: int | None = None):
+    async def pot_deposit(self, amount_in_minor_units: int | None = None):
         """Deposit into pot"""
 
 class BalanceSensor(MonzoSensor):
@@ -129,7 +129,7 @@ class BalanceSensor(MonzoSensor):
     def update_balance(self):
         self._balance = self._monzo_data.balances[self._account_id]
 
-    def pot_deposit(self, amount_in_minor_units: int | None = None):
+    async def pot_deposit(self, amount_in_minor_units: int | None = None):
         raise HomeAssistantError("supported only on Pot sensors")
 
 class PotSensor(MonzoSensor):
@@ -151,7 +151,7 @@ class PotSensor(MonzoSensor):
     def update_balance(self):
         self._balance: PotModel = next(p for p in self._monzo_data.pots[self._balance.account_id] if p.id == self._balance.id)
 
-    def pot_deposit(self, amount_in_minor_units: int | None = None):
-        new_pot = self._monzo_data.deposit_pot(self._account_id, self._balance.id, amount_in_minor_units)
+    async def pot_deposit(self, amount_in_minor_units: int | None = None):
+        new_pot = await self._monzo_data.deposit_pot(self._account_id, self._balance.id, amount_in_minor_units)
         self._balance = new_pot
         self._state = self._balance.balance/100
