@@ -89,8 +89,8 @@ def map_transaction(monzo_data,transaction):
         case 'payport_faster_payments':
             transaction_type = 'Faster Payment'
             counterparty = {
-                'account_number': transaction['counterparty']['account_number']
-                'name': transaction['counterparty']['name']
+                'account_number': transaction['counterparty']['account_number'],
+                'name': transaction['counterparty']['name'],
                 'sort_code': transaction['counterparty']['sort_code']
             }
         case 'uk_retail_pot':
