@@ -76,34 +76,44 @@ class MonzoTransactionEventEntity(EventEntity):
     async def _async_receive_data(self, event_type, transaction) -> None:
         _LOGGER.debug("Transaction event received %s: %s", event_type, str(transaction))
         if transaction['account_id'] == self._account_id and event_type == 'transaction.created':
-            self._trigger_event(event_type, map_transaction(transaction))
+            self._trigger_event(event_type, map_transaction(self._monzo_data, transaction))
             self.schedule_update_ha_state()
 
-def map_transaction(transaction):
+def map_transaction(monzo_data,transaction):
+    pot_id = transaction['metadata'].get('pot_id')
+    pot_name = None
+    counterparty = {}
     match transaction['scheme']:
         case 'mastercard':
             transaction_type = 'Card Payment'
         case 'payport_faster_payments':
             transaction_type = 'Faster Payment'
+            counterparty = {
+                'account_number': transaction['counterparty']['account_number']
+                'name': transaction['counterparty']['name']
+                'sort_code': transaction['counterparty']['sort_code']
+            }
         case 'uk_retail_pot':
             transaction_type = 'Pot Deposit'
+            pot = next(p for p in monzo_data.pots[transaction['account_id']] if p.id == pot_id)
+            pot_name = pot.name
         case _:
             _LOGGER.warn("Unknown transaction scheme: %s", transaction['scheme'])
             transaction_type = 'Unknown'
-    android_pay = transaction_type == 'Card Payment' and transaction['metadata'].get('tokenization_method') == 'android_pay'
-    is_roundup = transaction_type == 'Pot Deposit' and transaction['metadata'].get('trigger') == 'coin_jar'
-    pot_id = transaction['metadata'].get('pot_id')
-    incoming = transaction['amount'] > 0
     return {
-        'Incoming': incoming,
+        'Incoming': transaction['amount'] > 0,
         'Amount': abs(transaction['amount']/100),
         'Description': transaction['description'],
         'Currency': transaction['currency'],
         'Date Time': transaction['created'],
         'Transaction Id': transaction['id'],
         'Account Id': transaction['account_id'],
+        'Notes': transaction['metadata'].get('notes'),
+        'Triggered By': transaction['metadata'].get('triggered_by'),
+        'Android Pay': transaction['metadata'].get('tokenization_method') == 'android_pay'
         'Transaction Type': transaction_type,
-        'Android Pay': android_pay,
-        'Is Roundup': is_roundup,
-        'Pot Id': pot_id
+        'Is Roundup': transaction['metadata'].get('trigger') == 'coin_jar',
+        'Pot Id': pot_id,
+        'Pot Name': pot_name,
+        'Counterparty': counterparty
     }
