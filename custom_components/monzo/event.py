@@ -55,9 +55,13 @@ class MonzoTransactionEventEntity(EventEntity):
 
         self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{account.mask}-transactions")
 
-        self._attr_name = f"Monzo {account.mask} Transactions"
+        self._attr_name = f"Transactions"
         self._attr_event_types = ['transaction.created', 'transaction.updated']
         self._attr_unique_id = self.entity_id
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, account.id)}, name=f"Monzo Account {self._mask}"
+        )
+        self._attr_has_entity_name = True
 
     async def async_added_to_hass(self) -> None:
         """Call when entity is added to hass."""
