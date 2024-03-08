@@ -20,12 +20,14 @@ class BaseMonzoModel():
     account_id: str
     balance: float
     currency: str
+    spend_today: float
 
 class BalanceModel(BaseMonzoModel):
     def __init__(self, account_id: str, balance):
         self.account_id = account_id
         self.balance = balance['balance']
         self.currency = balance['currency']
+        self.spend_today = balance['spend_today']
 
 class PotModel(BaseMonzoModel):
     id: str
