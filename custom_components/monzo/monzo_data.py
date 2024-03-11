@@ -18,7 +18,7 @@ class MonzoData:
 
     async def async_update_coordinated(self, listening_idx):
         lookup_table = {}
-        accounts = await self.async_update_accounts()
+        accounts = await self.async_update_accounts_list()
         for account in accounts:
             balance = await self.async_update_balance(account.id, account.mask)
             pots = await self.async_update_pots_for_account(account.id, account.mask)
