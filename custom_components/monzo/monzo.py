@@ -52,7 +52,7 @@ class MonzoClient:
     async def get_pots(self, account_id, account_mask):
         resp = await self.make_request("GET", f"pots?current_account_id={account_id}")
         data = await resp.json()
-        potsModel = [PotModel(account_id, account_mask, pot) for pot in data['pots']]
+        potsModel = [PotModel(account_id, account_mask, pot) for pot in data['pots'] if not pot['deleted']]
         return potsModel
 
     async def get_webhooks(self, account_id):
