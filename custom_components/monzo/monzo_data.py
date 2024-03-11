@@ -20,7 +20,7 @@ class MonzoData:
         lookup_table = {}
         accounts = await self.async_update_accounts_list()
         for account in accounts:
-            balance = await self.async_update_balance(account.id, account.mask)
+            balance = await self.async_update_balance_for_account(account.id, account.mask)
             pots = await self.async_update_pots_for_account(account.id, account.mask)
             lookup_table[account.id] = balance
             for pot in pots:
