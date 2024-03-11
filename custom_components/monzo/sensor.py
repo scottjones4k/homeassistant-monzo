@@ -156,7 +156,7 @@ class BalanceSensor(CoordinatorEntity, SensorEntity):
         else:
             self._balance_type = "pot"
             self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.name}-pot")
-            self._attr_name = f"{data} Pot"   
+            self._attr_name = f"{data.name} Pot"   
 
         self._attr_unique_id = self.entity_id
         self._unit_of_measurement = data.currency
