@@ -50,7 +50,7 @@ async def async_setup_entry(
     await coordinator.async_config_entry_first_refresh()
 
     async_add_entities(
-        BalanceSensor(coordinator, idx) for idx, ent in coordinator.data.items() if idx.startswith("acc")
+        BalanceSensor(coordinator, idx) for idx, ent in coordinator.data.items()
     )
 
     # async_add_entities(
@@ -148,8 +148,16 @@ class BalanceSensor(CoordinatorEntity, SensorEntity):
         super().__init__(coordinator, context=idx)
         self.idx = idx
         data = self.coordinator.data[self.idx]
-        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.mask}-balance")
-        self._attr_name = f"Balance"
+
+        if isinstance(data, BalanceModel):
+            self._balance_type = "account"
+            self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.mask}-balance")
+            self._attr_name = f"Balance"
+        else:
+            self._balance_type = "pot"
+            self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.name}-pot")
+            self._attr_name = f"{data} Pot"   
+
         self._attr_unique_id = self.entity_id
         self._unit_of_measurement = data.currency
 
@@ -166,10 +174,16 @@ class BalanceSensor(CoordinatorEntity, SensorEntity):
         return self.coordinator.data[self.idx].balance
 
     async def pot_deposit(self, amount_in_minor_units: int | None = None):
-        raise HomeAssistantError("supported only on Pot sensors")
+        if self._balance_type == "account":
+            raise HomeAssistantError("supported only on Pot sensors")
+        data = self.coordinator.data[self.idx]
+        await self.coordinator._monzo_client.deposit_pot(data.account_id, data.id, amount_in_minor_units)
 
     async def pot_withdraw(self, amount_in_minor_units: int | None = None):
-        raise HomeAssistantError("supported only on Pot sensors")
+        if self._balance_type == "account":
+            raise HomeAssistantError("supported only on Pot sensors")
+        data = self.coordinator.data[self.idx]
+        await self.coordinator._monzo_client.withdraw_pot(data.account_id, data.id, amount_in_minor_units)
 
 # class SpendTodaySensor(MonzoSensor):
 #     """Representation of a SpendToday sensor."""
