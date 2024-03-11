@@ -53,16 +53,9 @@ async def async_setup_entry(
         BalanceSensor(coordinator, idx) for idx, ent in coordinator.data.items()
     )
 
-    # async_add_entities(
-    #     BalanceSensor(coordinator, idx) for idx, ent in enumerate(coordinator.data) if idx.startswith("pot")
-    # )
-
-    # for account in instance.accounts:
-    #     entities.append(BalanceSensor(instance, account))
-    #     entities.append(SpendTodaySensor(instance, account))
-    #     for pot in instance.pots[account.id]:
-    #         entities.append(PotSensor(instance, pot))
-    # async_add_entities(entities)
+    async_add_entities(
+        SpendTodaySensor(coordinator, idx) for idx, ent in coordinator.data.items() if idx.startswith("acc")
+    )
 
     platform = entity_platform.async_get_current_platform()
 
@@ -185,50 +178,18 @@ class BalanceSensor(CoordinatorEntity, SensorEntity):
         data = self.coordinator.data[self.idx]
         await self.coordinator._monzo_client.withdraw_pot(data.account_id, data.id, amount_in_minor_units)
 
-# class SpendTodaySensor(MonzoSensor):
-#     """Representation of a SpendToday sensor."""
+class SpendTodaySensor(BalanceSensor):
+    """Representation of a SpendToday sensor."""
 
-#     def __init__(self, monzo_data, account):
-#         """Initialize the sensor."""
-#         super().__init__(monzo_data, account)
-        
-#         self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._mask}-spend-today")
-#         self._attr_name = f"Spend Today"
-#         self._attr_unique_id = self.entity_id
-
-#         self._state = -1*self._balance.spend_today/100
-
-#     async def async_update(self):
-#         """Get the latest state of the sensor."""
-#         await self._monzo_data.async_update()
-#         self.update_balance()
-#         self._state = -1*self._balance.spend_today/100
-
-class PotSensor(MonzoSensor):
-    """Representation of a Pot sensor."""
-
-    def __init__(self, monzo_data, pot: PotModel):
+    def __init__(self, coordinator, idx):
         """Initialize the sensor."""
-        account = next(a for a in monzo_data.accounts if a.id == pot.account_id)
-        super().__init__(monzo_data, account)
-        self._balance: PotModel = pot
+        super().__init__(coordinator, idx)
         
-        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._balance.name}-pot")
-        self._attr_name = f"{self._balance.name} Pot"
+        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._mask}-spend-today")
+        self._attr_name = f"Spend Today"
         self._attr_unique_id = self.entity_id
 
-        self._state = self._balance.balance
-        self._unit_of_measurement = self._balance.currency
-
-    def update_balance(self):
-        self._balance: PotModel = next(p for p in self._monzo_data.pots[self._balance.account_id] if p.id == self._balance.id)
-
-    async def pot_deposit(self, amount_in_minor_units: int | None = None):
-        new_pot = await self._monzo_data.deposit_pot(self._account_id, self._balance.id, amount_in_minor_units)
-        self._balance = new_pot
-        self._state = self._balance.balance
-
-    async def pot_withdraw(self, amount_in_minor_units: int | None = None):
-        new_pot = await self._monzo_data.withdraw_pot(self._account_id, self._balance.id, amount_in_minor_units)
-        self._balance = new_pot
-        self._state = self._balance.balance
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        return self.coordinator.data[self.idx].spend_today

@@ -29,7 +29,7 @@ class BalanceModel(BaseMonzoModel):
         self.mask = mask
         self.balance = balance['balance']/100
         self.currency = balance['currency']
-        self.spend_today = balance['spend_today']
+        self.spend_today = -1*balance['spend_today']/100
 
 class PotModel(BaseMonzoModel):
     id: str
