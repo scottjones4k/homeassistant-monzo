@@ -50,7 +50,7 @@ async def async_setup_entry(
     await coordinator.async_config_entry_first_refresh()
 
     async_add_entities(
-        BalanceSensor(coordinator, idx) for idx, ent in enumerate(coordinator.data) if idx.startswith("acc")
+        BalanceSensor(coordinator, idx) for idx, ent in coordinator.data.items if idx.startswith("acc")
     )
 
     # async_add_entities(
