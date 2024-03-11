@@ -41,6 +41,10 @@ class MonzoData:
         self.accounts = accounts
         return accounts
 
+    async def async_update_accounts_list(self):
+        accounts = await self._monzo_client.get_accounts()
+        return accounts
+
     @Throttle(MIN_TIME_BETWEEN_BALANCE_UPDATES)
     async def async_update_balances(self):
         for account in self.accounts:
