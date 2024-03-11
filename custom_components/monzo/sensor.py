@@ -184,8 +184,9 @@ class SpendTodaySensor(BalanceSensor):
     def __init__(self, coordinator, idx):
         """Initialize the sensor."""
         super().__init__(coordinator, idx)
+        data = self.coordinator.data[self.idx]
         
-        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._mask}-spend-today")
+        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.mask}-spend-today")
         self._attr_name = f"Spend Today"
         self._attr_unique_id = self.entity_id
 
