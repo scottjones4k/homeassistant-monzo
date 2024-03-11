@@ -15,6 +15,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 from . import api
 from .const import DOMAIN, API_ENDPOINT, WEBHOOK_UPDATE
 from .monzo_data import MonzoData
+from .monzo_update_coordinator import MonzoUpdateCoordinator
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.EVENT]
 
@@ -51,8 +52,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     client = MonzoData(auth)
 
+    coordinator = MonzoUpdateCoordinator(hass, client)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
-        "client": client
+        "client": client,
+        "coordinator": coordinator
     }
 
     if CONF_WEBHOOK_ID not in entry.data:

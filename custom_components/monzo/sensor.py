@@ -12,6 +12,10 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers import entity_platform
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
+    DataUpdateCoordinator,
+)
 from abc import abstractmethod
 from .const import (
     DOMAIN,
@@ -21,6 +25,7 @@ from .const import (
 
 from .monzo_data import MonzoData
 from .models import AccountModel, BalanceModel, PotModel
+from .monzo_update_coordinator import MonzoUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,17 +45,24 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Monzo sensor platform."""
-    instance: MonzoData = hass.data[DOMAIN][config_entry.entry_id]["client"]
+    coordinator: MonzoUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
 
-    entities: list[SensorEntity] = []
+    await coordinator.async_config_entry_first_refresh()
 
-    await instance.async_update()
-    for account in instance.accounts:
-        entities.append(BalanceSensor(instance, account))
-        entities.append(SpendTodaySensor(instance, account))
-        for pot in instance.pots[account.id]:
-            entities.append(PotSensor(instance, pot))
-    async_add_entities(entities)
+    async_add_entities(
+        BalanceSensor(coordinator, idx) for idx, ent in enumerate(coordinator.data) if idx.startswith("acc")
+    )
+
+    # async_add_entities(
+    #     BalanceSensor(coordinator, idx) for idx, ent in enumerate(coordinator.data) if idx.startswith("pot")
+    # )
+
+    # for account in instance.accounts:
+    #     entities.append(BalanceSensor(instance, account))
+    #     entities.append(SpendTodaySensor(instance, account))
+    #     for pot in instance.pots[account.id]:
+    #         entities.append(PotSensor(instance, pot))
+    # async_add_entities(entities)
 
     platform = entity_platform.async_get_current_platform()
 
@@ -114,7 +126,7 @@ class MonzoSensor(SensorEntity):
         """Get the latest state of the sensor."""
         await self._monzo_data.async_update()
         self.update_balance()
-        self._state = self._balance.balance/100
+        self._state = self._balance.balance
 
     @abstractmethod
     def update_balance(self):
@@ -124,23 +136,34 @@ class MonzoSensor(SensorEntity):
     async def pot_deposit(self, amount_in_minor_units: int | None = None):
         """Deposit into pot"""
 
-class BalanceSensor(MonzoSensor):
+class BalanceSensor(CoordinatorEntity, SensorEntity):
     """Representation of a Balance sensor."""
 
-    def __init__(self, monzo_data, account):
+    def __init__(
+        self,
+        coordinator: DataUpdateCoordinator,
+        idx
+    ) -> None:
         """Initialize the sensor."""
-        super().__init__(monzo_data, account)
-        self._balance: BalanceModel = monzo_data.balances[self._account_id]
-        
-        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._mask}-balance")
+        super().__init__(coordinator, context=idx)
+        self.idx = idx
+        data = self.coordinator.data[self.idx]
+        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.mask}-balance")
         self._attr_name = f"Balance"
         self._attr_unique_id = self.entity_id
+        self._unit_of_measurement = data.currency
 
-        self._state = self._balance.balance/100
-        self._unit_of_measurement = self._balance.currency
+        self._attr_state_class = SensorStateClass.TOTAL
+        self._attr_suggested_display_precision = 2
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, data.account_id)}, name=f"Monzo Account {data.mask}"
+        )
+        self._attr_has_entity_name = True
 
-    def update_balance(self):
-        self._balance = self._monzo_data.balances[self._account_id]
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        return self.coordinator.data[self.idx].balance
 
     async def pot_deposit(self, amount_in_minor_units: int | None = None):
         raise HomeAssistantError("supported only on Pot sensors")
@@ -148,24 +171,24 @@ class BalanceSensor(MonzoSensor):
     async def pot_withdraw(self, amount_in_minor_units: int | None = None):
         raise HomeAssistantError("supported only on Pot sensors")
 
-class SpendTodaySensor(BalanceSensor):
-    """Representation of a SpendToday sensor."""
+# class SpendTodaySensor(MonzoSensor):
+#     """Representation of a SpendToday sensor."""
 
-    def __init__(self, monzo_data, account):
-        """Initialize the sensor."""
-        super().__init__(monzo_data, account)
+#     def __init__(self, monzo_data, account):
+#         """Initialize the sensor."""
+#         super().__init__(monzo_data, account)
         
-        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._mask}-spend-today")
-        self._attr_name = f"Spend Today"
-        self._attr_unique_id = self.entity_id
+#         self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._mask}-spend-today")
+#         self._attr_name = f"Spend Today"
+#         self._attr_unique_id = self.entity_id
 
-        self._state = self._balance.spend_today/100
+#         self._state = -1*self._balance.spend_today/100
 
-    async def async_update(self):
-        """Get the latest state of the sensor."""
-        await self._monzo_data.async_update()
-        self.update_balance()
-        self._state = self._balance.spend_today/100
+#     async def async_update(self):
+#         """Get the latest state of the sensor."""
+#         await self._monzo_data.async_update()
+#         self.update_balance()
+#         self._state = -1*self._balance.spend_today/100
 
 class PotSensor(MonzoSensor):
     """Representation of a Pot sensor."""
@@ -180,7 +203,7 @@ class PotSensor(MonzoSensor):
         self._attr_name = f"{self._balance.name} Pot"
         self._attr_unique_id = self.entity_id
 
-        self._state = self._balance.balance/100
+        self._state = self._balance.balance
         self._unit_of_measurement = self._balance.currency
 
     def update_balance(self):
@@ -189,9 +212,9 @@ class PotSensor(MonzoSensor):
     async def pot_deposit(self, amount_in_minor_units: int | None = None):
         new_pot = await self._monzo_data.deposit_pot(self._account_id, self._balance.id, amount_in_minor_units)
         self._balance = new_pot
-        self._state = self._balance.balance/100
+        self._state = self._balance.balance
 
     async def pot_withdraw(self, amount_in_minor_units: int | None = None):
         new_pot = await self._monzo_data.withdraw_pot(self._account_id, self._balance.id, amount_in_minor_units)
         self._balance = new_pot
-        self._state = self._balance.balance/100
+        self._state = self._balance.balance

@@ -43,16 +43,16 @@ class MonzoClient:
         accountModels = [AccountModel(a) for a in data['accounts'] if 'account_number' in a]
         return accountModels
 
-    async def get_balance(self, account_id):
+    async def get_balance(self, account_id, account_mask):
         resp = await self.make_request("GET", f"balance?account_id={account_id}")
         data = await resp.json()
-        balanceModel = BalanceModel(account_id, data)
+        balanceModel = BalanceModel(account_id, account_mask, data)
         return balanceModel
 
-    async def get_pots(self, account_id):
+    async def get_pots(self, account_id, account_mask):
         resp = await self.make_request("GET", f"pots?current_account_id={account_id}")
         data = await resp.json()
-        potsModel = [PotModel(account_id, pot) for pot in data['pots']]
+        potsModel = [PotModel(account_id, account_mask, pot) for pot in data['pots']]
         return potsModel
 
     async def get_webhooks(self, account_id):
