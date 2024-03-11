@@ -102,6 +102,17 @@ def map_transaction(monzo_data,transaction):
             transaction_type = 'Pot Deposit'
             pot = next(p for p in monzo_data.pots[transaction['account_id']] if p.id == pot_id)
             pot_name = pot.name
+        case 'bacs':
+            transaction_type = 'Direct Debit'
+            counterparty = {
+                'account_number': transaction['counterparty']['account_number'],
+                'name': transaction['counterparty']['name'],
+                'sort_code': transaction['counterparty']['sort_code']
+            }
+            if 'bills_pot_id' in transaction['metadata']:
+                pot_id = transaction['metadata'].get('bills_pot_id')
+                pot = next(p for p in monzo_data.pots[transaction['account_id']] if p.id == pot_id)
+                pot_name = pot.name
         case _:
             _LOGGER.warn("Unknown transaction scheme: %s", transaction['scheme'])
             transaction_type = 'Unknown'
@@ -118,6 +129,7 @@ def map_transaction(monzo_data,transaction):
         'Android Pay': transaction['metadata'].get('tokenization_method') == 'android_pay',
         'Transaction Type': transaction_type,
         'Is Roundup': transaction['metadata'].get('trigger') == 'coin_jar',
+        'Is Bill Payment': transaction['metadata'].get('trigger') == 'committed_spending',
         'Pot Id': pot_id,
         'Pot Name': pot_name,
         'Counterparty': counterparty
