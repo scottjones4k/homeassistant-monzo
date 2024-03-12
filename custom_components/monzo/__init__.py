@@ -53,8 +53,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     client = MonzoData(auth)
 
     coordinator = MonzoUpdateCoordinator(hass, client)
+
+    await coordinator.async_config_entry_first_refresh()
+
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
-        "client": client,
         "coordinator": coordinator
     }
 
@@ -66,10 +68,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     webhook.async_register(
         hass, DOMAIN, "Monzo", entry.data[CONF_WEBHOOK_ID], handle_webhook
     )
-    await client.async_update()
-    for account in client.accounts:
-        await client.register_webhook(account.id, webhook_url)
-        _LOGGER.info("Registered Monzo account webhook: %s : %s", account.id, webhook_url)
+    
+    for idx, ent in coordinator.data.items():
+        if idx.startswith("acc"):
+            await coordinator.register_webhook(idx, webhook_url)
+            _LOGGER.info("Registered Monzo account webhook: %s : %s", idx, webhook_url)
     _LOGGER.info("Registered HASS Monzo webhook: %s", webhook_url)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -83,8 +86,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         config = hass.data[DOMAIN].pop(entry.entry_id)
-        client = config["client"]
-        for account in client.accounts:
-            await client.unregister_webhook(account.id)
+        coordinator = config["coordinator"]
+        for idx, ent in coordinator.data.items():
+            if idx.startswith("webhook"):
+                await coordinator.unregister_webhook(idx)
 
     return unload_ok

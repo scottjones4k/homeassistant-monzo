@@ -22,10 +22,12 @@ class MonzoData:
         for account in accounts:
             balance = await self.async_update_balance_for_account(account.id, account.mask)
             pots = await self.async_update_pots_for_account(account.id, account.mask)
+            webhooks = await self.async_update_webhooks_for_account(account.id)
             lookup_table[account.id] = balance
             for pot in pots:
                 lookup_table[pot.id] = pot
-        await self.async_update_webhooks()
+            for webhook in webhooks:
+                lookup_table[webhook.id] = webhook
         return lookup_table
 
     async def async_update(self):
@@ -67,11 +69,13 @@ class MonzoData:
         for account in self.accounts:
             self.webhooks[account.id] = await self._monzo_client.get_webhooks(account.id)
 
+    async def async_update_webhooks_for_account(self, account_id):
+        return await self._monzo_client.get_webhooks(account_id)
+
     async def register_webhook(self, account_id, url):
         self.webhooks[account_id] = await self._monzo_client.register_webhook(account_id, url)
 
-    async def unregister_webhook(self, account_id):
-        webhook_id = self.webhooks[account_id].id
+    async def unregister_webhook(self, webhook_id):
         await self._monzo_client.unregister_webhook(webhook_id)
 
     async def deposit_pot(self, account_id: str, pot_id: str, amount: int):

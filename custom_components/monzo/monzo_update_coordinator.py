@@ -52,3 +52,15 @@ class MonzoUpdateCoordinator(DataUpdateCoordinator):
         #     raise ConfigEntryAuthFailed from err
         # except ApiError as err:
         #     raise UpdateFailed(f"Error communicating with API: {err}")
+    
+    async def register_webhook(self, account_id, url):
+        await self._monzo_client.register_webhook(account_id, url)
+
+    async def unregister_webhook(self, webhook_id):
+        await self._monzo_client.unregister_webhook(webhook_id)
+
+    async def deposit_pot(self, account_id: str, pot_id: str, amount: int):
+        return await self._monzo_client.deposit_pot(account_id, pot_id, amount)
+
+    async def withdraw_pot(self, account_id: str, pot_id: str, amount: int):
+        return await self._monzo_client.withdraw_pot(account_id, pot_id, amount)

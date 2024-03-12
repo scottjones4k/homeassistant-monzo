@@ -9,6 +9,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.device_registry import DeviceInfo
+from .monzo_update_coordinator import MonzoUpdateCoordinator
 
 from .const import (
     DOMAIN,
@@ -36,31 +37,32 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Monzo event entities."""
-    instance: MonzoData = hass.data[DOMAIN][config_entry.entry_id]["client"]
+    coordinator: MonzoUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
 
     entities: list[MonzoTransactionEventEntity] = []
 
-    for account in instance.accounts:
-        entities.append(MonzoTransactionEventEntity(instance, account))
-    async_add_entities(entities)
+    async_add_entities(
+        MonzoTransactionEventEntity(coordinator, idx) for idx, ent in coordinator.data.items() if idx.startswith("acc")
+    )
 
 
 class MonzoTransactionEventEntity(EventEntity):
     """Representation of a Monzo Event Entity."""
 
-    def __init__(self, monzo_data, account):
+    def __init__(self, coordinator, idx):
         """Initialize the sensor."""
-        self._monzo_data = monzo_data
-        self._account_id = account.id
-        self._mask = account.mask
+        self._coordinator = coordinator
+        self.idx = idx
 
-        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{account.mask}-transactions")
+        self._mask = self.coordinator.data[self.idx].mask
+
+        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._mask}-transactions")
 
         self._attr_name = f"Transactions"
         self._attr_event_types = ['transaction.created', 'transaction.updated']
         self._attr_unique_id = self.entity_id
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, account.id)}, name=f"Monzo Account {self._mask}"
+            identifiers={(DOMAIN, self.idx)}, name=f"Monzo Account {self._mask}"
         )
         self._attr_has_entity_name = True
 
@@ -69,7 +71,7 @@ class MonzoTransactionEventEntity(EventEntity):
         await super().async_added_to_hass()
 
         self._unsub_dispatcher = async_dispatcher_connect(
-            self.hass, f"{WEBHOOK_UPDATE}-{self._account_id}", self._async_receive_data
+            self.hass, f"{WEBHOOK_UPDATE}-{self.idx}", self._async_receive_data
         )
 
     async def async_will_remove_from_hass(self) -> None:
@@ -80,11 +82,11 @@ class MonzoTransactionEventEntity(EventEntity):
     @callback
     async def _async_receive_data(self, event_type, transaction) -> None:
         _LOGGER.debug("Transaction event received %s: %s", event_type, str(transaction))
-        if transaction['account_id'] == self._account_id and event_type == 'transaction.created':
-            self._trigger_event(event_type, map_transaction(self._monzo_data, transaction))
+        if transaction['account_id'] == self.idx and event_type == 'transaction.created':
+            self._trigger_event(event_type, map_transaction(self._coordinator, transaction))
             self.schedule_update_ha_state()
 
-def map_transaction(monzo_data,transaction):
+def map_transaction(coordinator,transaction):
     pot_id = transaction['metadata'].get('pot_id')
     pot_name = None
     counterparty = {}
@@ -100,8 +102,7 @@ def map_transaction(monzo_data,transaction):
             }
         case 'uk_retail_pot':
             transaction_type = 'Pot Deposit'
-            pot = next(p for p in monzo_data.pots[transaction['account_id']] if p.id == pot_id)
-            pot_name = pot.name
+            pot_name = coordinator.data[pot_id].name
         case 'bacs':
             transaction_type = 'Direct Debit'
             counterparty = {
@@ -111,8 +112,7 @@ def map_transaction(monzo_data,transaction):
             }
             if 'bills_pot_id' in transaction['metadata']:
                 pot_id = transaction['metadata'].get('bills_pot_id')
-                pot = next(p for p in monzo_data.pots[transaction['account_id']] if p.id == pot_id)
-                pot_name = pot.name
+                pot_name = coordinator.data[pot_id].name
         case _:
             _LOGGER.warn("Unknown transaction scheme: %s", transaction['scheme'])
             transaction_type = 'Unknown'
