@@ -115,11 +115,11 @@ class BalanceSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         """Return the state attributes of the sensor."""
+        data = self.coordinator.data[self.idx]
         if isinstance(data, BalanceModel):
             return {
                 ATTR_ATTRIBUTION: ATTRIBUTION,
             }
-        data = self.coordinator.data[self.idx]
         return {
             ATTR_ATTRIBUTION: ATTRIBUTION,
             'goal_amount': data.goal_amount,
