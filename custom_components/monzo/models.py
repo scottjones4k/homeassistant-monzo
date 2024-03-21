@@ -51,7 +51,7 @@ class PotModel(BaseMonzoModel):
         self.balance = pot['balance']/100
         self.currency = pot['currency']
         self.goal_amount = None
-        if ('goal_amount' in pot)
+        if 'goal_amount' in pot:
             self.goal_amount = pot.get('goal_amount')/100
         self.deleted = pot['deleted']
         self.locked = pot['locked']
