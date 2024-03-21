@@ -41,6 +41,7 @@ class PotModel(BaseMonzoModel):
     deleted: bool
     locked: bool
     pot_type: str
+    cover_image_url: str
 
     def __init__(self, account_id: str, mask: str, pot):
         self.id = pot['id']
@@ -53,3 +54,4 @@ class PotModel(BaseMonzoModel):
         self.deleted = pot['deleted']
         self.locked = pot['locked']
         self.pot_type = pot['type']
+        self.cover_image_url = pot['cover_image_url']
