@@ -100,6 +100,7 @@ class BalanceSensor(CoordinatorEntity, SensorEntity):
         self._attr_unique_id = self.entity_id
         self._unit_of_measurement = data.currency
 
+        self._attr_icon = DEFAULT_COIN_ICON
         self._attr_state_class = SensorStateClass.TOTAL
         self._attr_suggested_display_precision = 2
         self._attr_device_info = DeviceInfo(
