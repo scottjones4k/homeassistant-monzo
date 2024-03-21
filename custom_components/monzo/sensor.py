@@ -127,7 +127,7 @@ class BalanceSensor(CoordinatorEntity, SensorEntity):
             'deleted': data.deleted,
             'locked': data.locked,
             'pot_type': data.pot_type,
-            'cover_image_url': cover_image_url
+            'cover_image_url': data.cover_image_url
         }
 
     async def pot_deposit(self, amount_in_minor_units: int | None = None):
