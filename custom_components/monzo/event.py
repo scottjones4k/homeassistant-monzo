@@ -103,6 +103,8 @@ def map_transaction(coordinator,transaction):
         case 'uk_retail_pot':
             transaction_type = 'Pot Deposit'
             pot_name = coordinator.data[pot_id].name
+        case 'monzo_paid':
+            transaction_type = 'Monzo Fee'
         case 'bacs':
             transaction_type = 'Direct Debit'
             counterparty = {
