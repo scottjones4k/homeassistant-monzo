@@ -57,6 +57,10 @@ async def async_setup_entry(
         SpendTodaySensor(coordinator, idx) for idx, ent in coordinator.data.items() if idx.startswith("acc")
     )
 
+    async_add_entities(
+        TotalBalanceSensor(coordinator, idx) for idx, ent in coordinator.data.items() if idx.startswith("acc")
+    )
+
     platform = entity_platform.async_get_current_platform()
 
     platform.async_register_entity_service(
@@ -108,6 +112,22 @@ class BalanceSensor(CoordinatorEntity, SensorEntity):
         """Return the state of the sensor."""
         return self.coordinator.data[self.idx].balance
 
+    @property
+    def extra_state_attributes(self):
+        """Return the state attributes of the sensor."""
+        if isinstance(data, BalanceModel):
+            return {
+                ATTR_ATTRIBUTION: ATTRIBUTION,
+            }
+        data = self.coordinator.data[self.idx]
+        return {
+            ATTR_ATTRIBUTION: ATTRIBUTION,
+            'goal_amount': data.goal_amount,
+            'deleted': data.deleted,
+            'locked': data.locked,
+            'pot_type': data.pot_type
+        }
+
     async def pot_deposit(self, amount_in_minor_units: int | None = None):
         if self._balance_type == "account":
             raise HomeAssistantError("supported only on Pot sensors")
@@ -136,3 +156,20 @@ class SpendTodaySensor(BalanceSensor):
     def native_value(self):
         """Return the state of the sensor."""
         return self.coordinator.data[self.idx].spend_today
+
+class TotalBalanceSensor(BalanceSensor):
+    """Representation of a TotalBalance sensor."""
+
+    def __init__(self, coordinator, idx):
+        """Initialize the sensor."""
+        super().__init__(coordinator, idx)
+        data = self.coordinator.data[self.idx]
+        
+        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.mask}-total-balance")
+        self._attr_name = f"Total Balance"
+        self._attr_unique_id = self.entity_id
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        return self.coordinator.data[self.idx].total_balance
