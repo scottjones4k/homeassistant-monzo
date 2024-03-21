@@ -54,7 +54,7 @@ class MonzoTransactionEventEntity(EventEntity):
         self._coordinator = coordinator
         self.idx = idx
 
-        self._mask = self.coordinator.data[self.idx].mask
+        self._mask = self._coordinator.data[self.idx].mask
 
         self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._mask}-transactions")
 
