@@ -98,7 +98,7 @@ class BalanceSensor(CoordinatorEntity, SensorEntity):
             self._attr_name = f"{data.name} Pot"   
 
         self._attr_unique_id = self.entity_id
-        self._unit_of_measurement = data.currency
+        self._attr_unit_of_measurement = data.currency
 
         self._attr_icon = DEFAULT_COIN_ICON
         self._attr_state_class = SensorStateClass.TOTAL
