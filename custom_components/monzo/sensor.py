@@ -114,6 +114,11 @@ class BalanceSensor(CoordinatorEntity, SensorEntity):
         return self.coordinator.data[self.idx].balance
 
     @property
+    def native_unit_of_measurement(self):
+        """Return the unit of measurement."""
+        return self.coordinator.data[self.idx].currency
+
+    @property
     def extra_state_attributes(self):
         """Return the state attributes of the sensor."""
         data = self.coordinator.data[self.idx]
