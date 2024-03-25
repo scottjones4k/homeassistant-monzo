@@ -92,7 +92,10 @@ def map_transaction(coordinator,transaction):
     counterparty = {}
     match transaction['scheme']:
         case 'mastercard':
-            transaction_type = 'Card Payment'
+            if transaction.get('atm_fee_detailed') is not None and 'withdrawal_amount' in transaction['atm_fee_detailed']:
+                transaction_type = 'ATM Withdrawal'
+            else:
+                transaction_type = 'Card Payment'
         case 'payport_faster_payments':
             transaction_type = 'Faster Payment'
             counterparty = {
