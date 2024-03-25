@@ -16,7 +16,7 @@ class MonzoData:
         self.pots = {}
         self.webhooks = {}
 
-    async def async_update_coordinated(self, listening_idx):
+    async def async_update_coordinated(self, _listening_idx):
         lookup_table = {}
         accounts = await self.async_update_accounts_list()
         for account in accounts:

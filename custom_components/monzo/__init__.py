@@ -33,7 +33,7 @@ async def handle_webhook(hass, webhook_id, request):
         data['data']
     )
     _LOGGER.info("Received Monzo webhook: %s", account_id)
-    return web.Response(text=f"Logged")
+    return web.Response(text="Logged")
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Monzo from a config entry."""

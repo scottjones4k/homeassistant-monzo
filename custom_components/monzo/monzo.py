@@ -46,36 +46,33 @@ class MonzoClient:
     async def get_balance(self, account_id, account_mask):
         resp = await self.make_request("GET", f"balance?account_id={account_id}")
         data = await resp.json()
-        balanceModel = BalanceModel(account_id, account_mask, data)
-        return balanceModel
+        return BalanceModel(account_id, account_mask, data)
 
     async def get_pots(self, account_id, account_mask):
         resp = await self.make_request("GET", f"pots?current_account_id={account_id}")
         data = await resp.json()
-        potsModel = [PotModel(account_id, account_mask, pot) for pot in data['pots'] if not pot['deleted']]
-        return potsModel
+        return [PotModel(account_id, account_mask, pot) for pot in data['pots'] if not pot['deleted']]
 
     async def get_webhooks(self, account_id):
         resp = await self.make_request("GET", f"webhooks?account_id={account_id}")
         data = await resp.json()
-        hooksModel = [WebhookModel(hook) for hook in data['webhooks']]
-        return hooksModel
+        return [WebhookModel(hook) for hook in data['webhooks']]
 
     async def register_webhook(self, account_id, url):
         existing = await self.get_webhooks(account_id)
-        foundHooks = [w for w in existing if w.account_id == account_id and w.url == url]
-        if any(foundHooks):
+        found_hooks = [w for w in existing if w.account_id == account_id and w.url == url]
+        if any(found_hooks):
             _LOGGER.debug("Found existing Monzo account webhook: %s : %s", account_id, url)
-            return foundHooks[0]
+            return found_hooks[0]
         _LOGGER.debug("Registering Monzo account webhook: %s : %s", account_id, url)
-        postData = { 'account_id': account_id, 'url': url}
-        resp = await self.make_request("POST", f"webhooks", data=postData)
+        post_data = { 'account_id': account_id, 'url': url}
+        resp = await self.make_request("POST", "webhooks", data=post_data)
         data = await resp.json()
         _LOGGER.debug("Registered Monzo account webhook using data: %s", str(data))
         return WebhookModel(data['webhook'])
 
     async def unregister_webhook(self, webhook_id):
-        _LOGGER.debug("Unregistering Monzo account webhook: %s : %s", webhook_id)
+        _LOGGER.debug("Unregistering Monzo account webhook: %s", webhook_id)
         resp = await self.make_request("DELETE", f"webhooks/{webhook_id}")
         data = await resp.json()
         _LOGGER.debug("Unregistered Monzo account webhook using data: %s", str(data))
@@ -83,16 +80,16 @@ class MonzoClient:
 
     async def deposit_pot(self, account_id: str, pot_id: str, amount: int):
         _LOGGER.debug("Depositing into pot: %s", pot_id)
-        postData = { 'source_account_id': account_id, 'amount': amount, 'dedupe_id': secrets.token_hex()}
-        resp = await self.make_request("PUT", f"pots/{pot_id}/deposit", data=postData)
+        post_data = { 'source_account_id': account_id, 'amount': amount, 'dedupe_id': secrets.token_hex()}
+        resp = await self.make_request("PUT", f"pots/{pot_id}/deposit", data=post_data)
         data = await resp.json()
         _LOGGER.debug("Deposit success: %s", str(data))
         return PotModel(account_id, data)
 
     async def withdraw_pot(self, account_id: str, pot_id: str, amount: int):
         _LOGGER.debug("Depositing into pot: %s", pot_id)
-        postData = { 'destination_account_id': account_id, 'amount': amount, 'dedupe_id': secrets.token_hex()}
-        resp = await self.make_request("PUT", f"pots/{pot_id}/withdraw", data=postData)
+        post_data = { 'destination_account_id': account_id, 'amount': amount, 'dedupe_id': secrets.token_hex()}
+        resp = await self.make_request("PUT", f"pots/{pot_id}/withdraw", data=post_data)
         data = await resp.json()
         _LOGGER.debug("Deposit success: %s", str(data))
         return PotModel(account_id, data)

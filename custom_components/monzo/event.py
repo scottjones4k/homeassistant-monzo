@@ -39,8 +39,6 @@ async def async_setup_entry(
     """Set up the Monzo event entities."""
     coordinator: MonzoUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
 
-    entities: list[MonzoTransactionEventEntity] = []
-
     async_add_entities(
         MonzoTransactionEventEntity(coordinator, idx) for idx, ent in coordinator.data.items() if idx.startswith("acc")
     )
@@ -58,7 +56,7 @@ class MonzoTransactionEventEntity(EventEntity):
 
         self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._mask}-transactions")
 
-        self._attr_name = f"Transactions"
+        self._attr_name = "Transactions"
         self._attr_event_types = ['transaction.created', 'transaction.updated']
         self._attr_unique_id = self.entity_id
         self._attr_device_info = DeviceInfo(
