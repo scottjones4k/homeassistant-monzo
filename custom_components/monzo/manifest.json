@@ -2,7 +2,7 @@
     "domain": "monzo",
     "name": "Monzo",
     "documentation": "",
-    "requirements": ["aiohttp==3.9.4"],
+    "requirements": ["aiohttp>=3.9.4"],
     "codeowners": [],
     "version": "1.0.0",
     "iot_class": "cloud_polling",
