@@ -136,12 +136,13 @@ class MonzoSensor(MonzoBaseEntity, SensorEntity):
     def __init__(
         self,
         coordinator: DataUpdateCoordinator,
-        idx
+        entity_description,
+        idx,
+        device_model: str
     ) -> None:
         """Initialize the sensor."""
         self.idx = idx
-        sensor_type = "Account" if idx.startswith("acc_") else "Pot"
-        super().__init__(coordinator, idx, sensor_type)
+        super().__init__(coordinator, idx, device_model)
 
         if isinstance(self.data, BalanceModel):
             self._balance_type = "account"
@@ -150,14 +151,7 @@ class MonzoSensor(MonzoBaseEntity, SensorEntity):
 
         self._attr_state_class = SensorStateClass.TOTAL
 
-        self.entity_description = MonzoSensorEntityDescription(
-            key="balance",
-            translation_key="balance",
-            device_class=SensorDeviceClass.MONETARY,
-            native_unit_of_measurement=self.data.currency,
-            suggested_display_precision=2,
-            value_fn=lambda data: data.balance / 100
-        )
+        self.entity_description = entity_description
 
         self._attr_unique_id = f"{self.idx}_{self.entity_description.key}"
 
