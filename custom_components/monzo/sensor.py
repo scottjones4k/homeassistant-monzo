@@ -183,7 +183,7 @@ class MonzoSensor(MonzoBaseEntity, SensorEntity):
             }
         return {
             ATTR_ATTRIBUTION: ATTRIBUTION,
-            'goal_amount': self.data.goal_amount,
+            'goal_amount': self.data.goal_amount/100,
             'deleted': self.data.deleted,
             'locked': self.data.locked,
             'pot_type': self.data.pot_type,
