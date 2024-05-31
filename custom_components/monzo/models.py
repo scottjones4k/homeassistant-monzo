@@ -1,10 +1,12 @@
 class AccountModel():
     id: str
     mask: str
+    name: str
 
     def __init__(self, account):
         self.id = account['id']
         self.mask = account['account_number'][-4:]
+        self.name = mask
 
 class WebhookModel():
     id: str
@@ -19,6 +21,7 @@ class WebhookModel():
 class BaseMonzoModel():
     account_id: str
     mask: str
+    name: str
     balance: float
     currency: str
 
@@ -29,6 +32,7 @@ class BalanceModel(BaseMonzoModel):
     def __init__(self, account_id: str, mask: str, balance):
         self.account_id = account_id
         self.mask = mask
+        self.name = mask
         self.balance = balance['balance']/100
         self.total_balance = balance['total_balance']/100
         self.currency = balance['currency']

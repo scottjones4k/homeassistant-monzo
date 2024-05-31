@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import logging
 import voluptuous as vol
+from typing import Any
 
-from homeassistant.components.sensor import SensorEntity, SensorStateClass, ENTITY_ID_FORMAT
+from homeassistant.components.sensor import SensorEntity, SensorStateClass, ENTITY_ID_FORMAT, SensorDeviceClass, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant
@@ -26,6 +27,7 @@ from .const import (
 from .monzo_data import MonzoData
 from .models import AccountModel, BalanceModel, PotModel
 from .monzo_update_coordinator import MonzoUpdateCoordinator
+from .entity import MonzoBaseEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -75,7 +77,7 @@ async def async_setup_entry(
         "pot_withdraw",
     )
 
-class BalanceSensor(CoordinatorEntity, SensorEntity):
+class BalanceSensor(MonzoBaseEntity, SensorEntity):
     """Representation of a Balance sensor."""
 
     def __init__(
@@ -84,29 +86,26 @@ class BalanceSensor(CoordinatorEntity, SensorEntity):
         idx
     ) -> None:
         """Initialize the sensor."""
-        super().__init__(coordinator, context=idx)
         self.idx = idx
-        data = self.coordinator.data[self.idx]
+        sensor_type = "Account" if idx.startswith("acc_") else "Pot"
+        super().__init__(coordinator, context=idx, sensor_type)
 
-        if isinstance(data, BalanceModel):
+        if isinstance(self.data, BalanceModel):
             self._balance_type = "account"
-            self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.mask}-balance")
-            self._attr_name = "Balance"
         else:
             self._balance_type = "pot"
-            self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.name}-pot")
-            self._attr_name = f"{data.name} Pot"   
 
-        self._attr_unique_id = self.entity_id
-        self._attr_unit_of_measurement = data.currency
-
-        self._attr_icon = DEFAULT_COIN_ICON
         self._attr_state_class = SensorStateClass.TOTAL
-        self._attr_suggested_display_precision = 2
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, data.account_id)}, name=f"Monzo Account {data.mask}"
+
+        self.entity_description = SensorEntityDescription(
+            key="balance",
+            translation_key="balance",
+            device_class=SensorDeviceClass.MONETARY,
+            native_unit_of_measurement=self.data.currency,
+            suggested_display_precision=2,
         )
-        self._attr_has_entity_name = True
+
+        self._attr_unique_id = f"{self.idx}_{self.entity_description.key}"
 
     @property
     def native_value(self):
@@ -114,69 +113,61 @@ class BalanceSensor(CoordinatorEntity, SensorEntity):
         return self.coordinator.data[self.idx].balance
 
     @property
-    def native_unit_of_measurement(self):
-        """Return the unit of measurement."""
-        return self.coordinator.data[self.idx].currency
-
-    @property
     def extra_state_attributes(self):
         """Return the state attributes of the sensor."""
-        data = self.coordinator.data[self.idx]
-        if isinstance(data, BalanceModel):
+        if isinstance(self.data, BalanceModel):
             return {
                 ATTR_ATTRIBUTION: ATTRIBUTION,
             }
         return {
             ATTR_ATTRIBUTION: ATTRIBUTION,
-            'goal_amount': data.goal_amount,
-            'deleted': data.deleted,
-            'locked': data.locked,
-            'pot_type': data.pot_type,
-            'cover_image_url': data.cover_image_url
+            'goal_amount': self.data.goal_amount,
+            'deleted': self.data.deleted,
+            'locked': self.data.locked,
+            'pot_type': self.data.pot_type,
+            'cover_image_url': self.data.cover_image_url
         }
 
     async def pot_deposit(self, amount_in_minor_units: int | None = None):
         if self._balance_type == "account":
             raise HomeAssistantError("supported only on Pot sensors")
-        data = self.coordinator.data[self.idx]
-        await self.coordinator.deposit_pot(data.account_id, data.id, amount_in_minor_units)
+        await self.coordinator.deposit_pot(self.data.account_id, self.data.id, amount_in_minor_units)
 
     async def pot_withdraw(self, amount_in_minor_units: int | None = None):
         if self._balance_type == "account":
             raise HomeAssistantError("supported only on Pot sensors")
-        data = self.coordinator.data[self.idx]
-        await self.coordinator.withdraw_pot(data.account_id, data.id, amount_in_minor_units)
+        await self.coordinator.withdraw_pot(self.data.account_id, self.data.id, amount_in_minor_units)
 
-class SpendTodaySensor(BalanceSensor):
-    """Representation of a SpendToday sensor."""
+# class SpendTodaySensor(BalanceSensor):
+#     """Representation of a SpendToday sensor."""
 
-    def __init__(self, coordinator, idx):
-        """Initialize the sensor."""
-        super().__init__(coordinator, idx)
-        data = self.coordinator.data[self.idx]
+#     def __init__(self, coordinator, idx):
+#         """Initialize the sensor."""
+#         super().__init__(coordinator, idx)
+#         data = self.coordinator.data[self.idx]
         
-        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.mask}-spend-today")
-        self._attr_name = "Spend Today"
-        self._attr_unique_id = self.entity_id
+#         self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.mask}-spend-today")
+#         self._attr_name = "Spend Today"
+#         self._attr_unique_id = self.entity_id
 
-    @property
-    def native_value(self):
-        """Return the state of the sensor."""
-        return self.coordinator.data[self.idx].spend_today
+#     @property
+#     def native_value(self):
+#         """Return the state of the sensor."""
+#         return self.coordinator.data[self.idx].spend_today
 
-class TotalBalanceSensor(BalanceSensor):
-    """Representation of a TotalBalance sensor."""
+# class TotalBalanceSensor(BalanceSensor):
+#     """Representation of a TotalBalance sensor."""
 
-    def __init__(self, coordinator, idx):
-        """Initialize the sensor."""
-        super().__init__(coordinator, idx)
-        data = self.coordinator.data[self.idx]
+#     def __init__(self, coordinator, idx):
+#         """Initialize the sensor."""
+#         super().__init__(coordinator, idx)
+#         data = self.coordinator.data[self.idx]
         
-        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.mask}-total-balance")
-        self._attr_name = "Total Balance"
-        self._attr_unique_id = self.entity_id
+#         self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.mask}-total-balance")
+#         self._attr_name = "Total Balance"
+#         self._attr_unique_id = self.entity_id
 
-    @property
-    def native_value(self):
-        """Return the state of the sensor."""
-        return self.coordinator.data[self.idx].total_balance
+#     @property
+#     def native_value(self):
+#         """Return the state of the sensor."""
+#         return self.coordinator.data[self.idx].total_balance

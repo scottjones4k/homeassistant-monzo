@@ -34,7 +34,7 @@
           "name": "Total balance"
         },
         "pot_balance": {
-          "name": "[%key:component::monzo::entity::sensor::balance::name%]"
+          "name": "Balance"
         }
       }
     }
