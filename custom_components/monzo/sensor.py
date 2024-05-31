@@ -88,7 +88,7 @@ class BalanceSensor(MonzoBaseEntity, SensorEntity):
         """Initialize the sensor."""
         self.idx = idx
         sensor_type = "Account" if idx.startswith("acc_") else "Pot"
-        super().__init__(coordinator, context=idx, sensor_type)
+        super().__init__(coordinator, idx, sensor_type)
 
         if isinstance(self.data, BalanceModel):
             self._balance_type = "account"
