@@ -54,7 +54,7 @@ ACCOUNT_SENSORS = (
     MonzoSensorEntityDescription(
         key="balance",
         translation_key="balance",
-        value_fn=lambda data: data.balance / 100
+        value_fn=lambda data: data.balance / 100,
         device_class=SensorDeviceClass.MONETARY,
         native_unit_of_measurement="GBP",
         suggested_display_precision=2,
@@ -73,7 +73,7 @@ POT_SENSORS = (
     MonzoSensorEntityDescription(
         key="pot_balance",
         translation_key="pot_balance",
-        value_fn=lambda data: data.balance / 100
+        value_fn=lambda data: data.balance / 100,
         device_class=SensorDeviceClass.MONETARY,
         native_unit_of_measurement="GBP",
         suggested_display_precision=2,
