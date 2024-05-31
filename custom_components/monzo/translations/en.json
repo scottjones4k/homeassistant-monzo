@@ -1,0 +1,41 @@
+{
+    "config": {
+      "step": {
+        "pick_implementation": {
+          "title": "Pick authentication method"
+        },
+        "await_approval_confirmation": {
+          "title": "Confirm in Monzo app",
+          "description": "Before proceeding, open your Monzo app and approve the request from Home Assistant.",
+          "data": {
+            "confirm": "I've approved"
+          }
+        }
+      },
+      "abort": {
+        "already_configured": "Account is already configured",
+        "already_in_progress": "Configuration flow is already in progress",
+        "oauth_error": "Received invalid token data.",
+        "missing_configuration": "The component is not configured. Please follow the documentation.",
+        "authorize_url_timeout": "Timeout generating authorize URL.",
+        "no_url_available": "No URL available. For information about this error, [check the help section]({docs_url})",
+        "user_rejected_authorize": "No URL available. For information about this error, [check the help section]({docs_url})"
+      },
+      "create_entry": {
+        "default": "Successfully authenticated"
+      }
+    },
+    "entity": {
+      "sensor": {
+        "balance": {
+          "name": "Balance"
+        },
+        "total_balance": {
+          "name": "Total balance"
+        },
+        "pot_balance": {
+          "name": "[%key:component::monzo::entity::sensor::balance::name%]"
+        }
+      }
+    }
+  }
