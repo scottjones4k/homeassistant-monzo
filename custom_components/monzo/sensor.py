@@ -4,6 +4,8 @@ from __future__ import annotations
 import logging
 import voluptuous as vol
 from typing import Any
+from collections.abc import Callable
+from dataclasses import dataclass
 
 from homeassistant.components.sensor import SensorEntity, SensorStateClass, ENTITY_ID_FORMAT, SensorDeviceClass, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
@@ -11,6 +13,7 @@ from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers import entity_platform
+from homeassistant.helpers.typing import StateType
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
@@ -41,6 +44,42 @@ POT_SERVICE_SCHEMA = {
     vol.Required('amount_in_minor_units'): vol.All(vol.Coerce(int), vol.Range(0, 65535)),
 }
 
+@dataclass(frozen=True, kw_only=True)
+class MonzoSensorEntityDescription(SensorEntityDescription):
+    """Describes Monzo sensor entity."""
+
+    value_fn: Callable[[dict[str, Any]], StateType]
+
+ACCOUNT_SENSORS = (
+    MonzoSensorEntityDescription(
+        key="balance",
+        translation_key="balance",
+        value_fn=lambda data: data.balance / 100
+        device_class=SensorDeviceClass.MONETARY,
+        native_unit_of_measurement="GBP",
+        suggested_display_precision=2,
+    ),
+    MonzoSensorEntityDescription(
+        key="total_balance",
+        translation_key="total_balance",
+        value_fn=lambda data: data.total_balance / 100,
+        device_class=SensorDeviceClass.MONETARY,
+        native_unit_of_measurement="GBP",
+        suggested_display_precision=2,
+    ),
+)
+
+POT_SENSORS = (
+    MonzoSensorEntityDescription(
+        key="pot_balance",
+        translation_key="pot_balance",
+        value_fn=lambda data: data.balance / 100
+        device_class=SensorDeviceClass.MONETARY,
+        native_unit_of_measurement="GBP",
+        suggested_display_precision=2,
+    ),
+)
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
@@ -55,14 +94,28 @@ async def async_setup_entry(
         BalanceSensor(coordinator, idx) for idx, ent in coordinator.data.items() if not idx.startswith("webhook")
     )
 
-    async_add_entities(
-        SpendTodaySensor(coordinator, idx) for idx, ent in coordinator.data.items() if idx.startswith("acc")
-    )
+    accounts = [
+        MonzoSensor(
+            coordinator,
+            entity_description,
+            index,
+            account.name
+        )
+        for entity_description in ACCOUNT_SENSORS
+        for index, account in coordinator.data.items() if idx.startswith("acc")
+    ]
 
-    async_add_entities(
-        TotalBalanceSensor(coordinator, idx) for idx, ent in coordinator.data.items() if idx.startswith("acc")
-    )
+    pots = [
+        MonzoSensor(coordinator, entity_description, index, MODEL_POT)
+        for entity_description in POT_SENSORS
+        for index, _pot in coordinator.data.items() if idx.startswith("pot")
+    ]
+    # async_add_entities(
+    #     SpendTodaySensor(coordinator, idx) for idx, ent in coordinator.data.items() if idx.startswith("acc")
+    # )
 
+    async_add_entities(accounts + pots) 
+    
     platform = entity_platform.async_get_current_platform()
 
     platform.async_register_entity_service(
@@ -77,7 +130,7 @@ async def async_setup_entry(
         "pot_withdraw",
     )
 
-class BalanceSensor(MonzoBaseEntity, SensorEntity):
+class MonzoSensor(MonzoBaseEntity, SensorEntity):
     """Representation of a Balance sensor."""
 
     def __init__(
@@ -97,20 +150,27 @@ class BalanceSensor(MonzoBaseEntity, SensorEntity):
 
         self._attr_state_class = SensorStateClass.TOTAL
 
-        self.entity_description = SensorEntityDescription(
+        self.entity_description = MonzoSensorEntityDescription(
             key="balance",
             translation_key="balance",
             device_class=SensorDeviceClass.MONETARY,
             native_unit_of_measurement=self.data.currency,
             suggested_display_precision=2,
+            value_fn=lambda data: data.balance / 100
         )
 
         self._attr_unique_id = f"{self.idx}_{self.entity_description.key}"
 
     @property
-    def native_value(self):
-        """Return the state of the sensor."""
-        return self.coordinator.data[self.idx].balance
+    def native_value(self) -> StateType:
+        """Return the state."""
+
+        try:
+            state = self.entity_description.value_fn(self.data)
+        except (KeyError, ValueError):
+            return None
+
+        return state
 
     @property
     def extra_state_attributes(self):

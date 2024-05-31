@@ -1,3 +1,12 @@
+CURRENT_ACCOUNT = "uk_retail"
+ACCOUNT_NAMES = {
+    CURRENT_ACCOUNT: "Current Account",
+    "uk_retail_joint": "Joint Account",
+    "uk_monzo_flex": "Flex",
+    "uk_business": "Business Account",
+    "uk_rewards": "Cashback",
+}
+
 class AccountModel():
     id: str
     mask: str
@@ -6,7 +15,7 @@ class AccountModel():
     def __init__(self, account):
         self.id = account['id']
         self.mask = account['account_number'][-4:]
-        self.name = self.mask
+        self.name = ACCOUNT_NAMES.get(account["type"], account["type"])
 
 class WebhookModel():
     id: str
