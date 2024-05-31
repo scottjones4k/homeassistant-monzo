@@ -6,7 +6,7 @@ class AccountModel():
     def __init__(self, account):
         self.id = account['id']
         self.mask = account['account_number'][-4:]
-        self.name = mask
+        self.name = self.mask
 
 class WebhookModel():
     id: str
