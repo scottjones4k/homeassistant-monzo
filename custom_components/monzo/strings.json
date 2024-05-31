@@ -35,6 +35,9 @@
         },
         "pot_balance": {
           "name": "Balance"
+        },
+        "spend_today": {
+          "name": "Spend Today"
         }
       }
     }

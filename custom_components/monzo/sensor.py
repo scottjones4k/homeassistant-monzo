@@ -67,6 +67,14 @@ ACCOUNT_SENSORS = (
         native_unit_of_measurement="GBP",
         suggested_display_precision=2,
     ),
+    MonzoSensorEntityDescription(
+        key="spend_today",
+        translation_key="spend_today",
+        value_fn=lambda data: data.spend_today / 100,
+        device_class=SensorDeviceClass.MONETARY,
+        native_unit_of_measurement="GBP",
+        suggested_display_precision=2,
+    ),
 )
 
 POT_SENSORS = (
@@ -90,9 +98,9 @@ async def async_setup_entry(
 
     await coordinator.async_config_entry_first_refresh()
 
-    async_add_entities(
-        BalanceSensor(coordinator, idx) for idx, ent in coordinator.data.items() if not idx.startswith("webhook")
-    )
+    # async_add_entities(
+    #     BalanceSensor(coordinator, idx) for idx, ent in coordinator.data.items() if not idx.startswith("webhook")
+    # )
 
     accounts = [
         MonzoSensor(
@@ -191,37 +199,3 @@ class MonzoSensor(MonzoBaseEntity, SensorEntity):
         if self._balance_type == "account":
             raise HomeAssistantError("supported only on Pot sensors")
         await self.coordinator.withdraw_pot(self.data.account_id, self.data.id, amount_in_minor_units)
-
-# class SpendTodaySensor(BalanceSensor):
-#     """Representation of a SpendToday sensor."""
-
-#     def __init__(self, coordinator, idx):
-#         """Initialize the sensor."""
-#         super().__init__(coordinator, idx)
-#         data = self.coordinator.data[self.idx]
-        
-#         self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.mask}-spend-today")
-#         self._attr_name = "Spend Today"
-#         self._attr_unique_id = self.entity_id
-
-#     @property
-#     def native_value(self):
-#         """Return the state of the sensor."""
-#         return self.coordinator.data[self.idx].spend_today
-
-# class TotalBalanceSensor(BalanceSensor):
-#     """Representation of a TotalBalance sensor."""
-
-#     def __init__(self, coordinator, idx):
-#         """Initialize the sensor."""
-#         super().__init__(coordinator, idx)
-#         data = self.coordinator.data[self.idx]
-        
-#         self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{data.mask}-total-balance")
-#         self._attr_name = "Total Balance"
-#         self._attr_unique_id = self.entity_id
-
-#     @property
-#     def native_value(self):
-#         """Return the state of the sensor."""
-#         return self.coordinator.data[self.idx].total_balance
