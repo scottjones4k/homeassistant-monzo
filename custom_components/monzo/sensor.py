@@ -102,13 +102,13 @@ async def async_setup_entry(
             account.name
         )
         for entity_description in ACCOUNT_SENSORS
-        for index, account in coordinator.data.items() if idx.startswith("acc")
+        for index, account in coordinator.data.items() if index.startswith("acc")
     ]
 
     pots = [
-        MonzoSensor(coordinator, entity_description, index, MODEL_POT)
+        MonzoSensor(coordinator, entity_description, index, "Pot")
         for entity_description in POT_SENSORS
-        for index, _pot in coordinator.data.items() if idx.startswith("pot")
+        for index, _pot in coordinator.data.items() if index.startswith("pot")
     ]
     # async_add_entities(
     #     SpendTodaySensor(coordinator, idx) for idx, ent in coordinator.data.items() if idx.startswith("acc")
