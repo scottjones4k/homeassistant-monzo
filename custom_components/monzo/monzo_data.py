@@ -20,7 +20,7 @@ class MonzoData:
         lookup_table = {}
         accounts = await self.async_update_accounts_list()
         for account in accounts:
-            balance = await self.async_update_balance_for_account(account.id, account.mask)
+            balance = await self.async_update_balance_for_account(account.id, account.mask, account.name)
             pots = await self.async_update_pots_for_account(account.id, account.mask)
             webhooks = await self.async_update_webhooks_for_account(account.id)
             lookup_table[account.id] = balance
@@ -52,8 +52,8 @@ class MonzoData:
         for account in self.accounts:
             self.balances[account.id] = await self._monzo_client.get_balance(account.id, account.mask)
 
-    async def async_update_balance_for_account(self, account_id, account_mask):
-        return await self._monzo_client.get_balance(account_id, account_mask)
+    async def async_update_balance_for_account(self, account_id, account_mask, account_name):
+        return await self._monzo_client.get_balance(account_id, account_mask, account_name)
 
     @Throttle(MIN_TIME_BETWEEN_BALANCE_UPDATES)
     async def async_update_pots(self):

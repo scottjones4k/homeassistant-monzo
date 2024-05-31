@@ -38,14 +38,14 @@ class BalanceModel(BaseMonzoModel):
     spend_today: float
     total_balance: float
 
-    def __init__(self, account_id: str, mask: str, balance):
+    def __init__(self, account_id: str, mask: str, account_name: str, balance):
         self.account_id = account_id
         self.mask = mask
-        self.name = mask
-        self.balance = balance['balance']/100
-        self.total_balance = balance['total_balance']/100
+        self.name = account_name
+        self.balance = balance['balance']
+        self.total_balance = balance['total_balance']
         self.currency = balance['currency']
-        self.spend_today = -1*balance['spend_today']/100
+        self.spend_today = -1*balance['spend_today']
 
 class PotModel(BaseMonzoModel):
     id: str
@@ -61,11 +61,11 @@ class PotModel(BaseMonzoModel):
         self.mask = mask
         self.account_id = account_id
         self.name = pot['name']
-        self.balance = pot['balance']/100
+        self.balance = pot['balance']
         self.currency = pot['currency']
         self.goal_amount = None
         if 'goal_amount' in pot:
-            self.goal_amount = pot.get('goal_amount')/100
+            self.goal_amount = pot.get('goal_amount')
         self.deleted = pot['deleted']
         self.locked = pot['locked']
         self.pot_type = pot['type']

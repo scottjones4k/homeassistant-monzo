@@ -42,10 +42,10 @@ class MonzoClient:
         data = await resp.json()
         return [AccountModel(a) for a in data['accounts'] if 'account_number' in a]
 
-    async def get_balance(self, account_id, account_mask):
+    async def get_balance(self, account_id, account_mask, account_name):
         resp = await self.make_request("GET", f"balance?account_id={account_id}")
         data = await resp.json()
-        return BalanceModel(account_id, account_mask, data)
+        return BalanceModel(account_id, account_mask, account_name, data)
 
     async def get_pots(self, account_id, account_mask):
         resp = await self.make_request("GET", f"pots?current_account_id={account_id}")
