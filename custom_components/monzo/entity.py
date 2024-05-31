@@ -64,7 +64,7 @@ class MonzoBaseEntity(CoordinatorEntity):
             identifiers={(DOMAIN, str(self.idx))},
             manufacturer="Monzo",
             model=device_model,
-            name=self.data["name"],
+            name=self.data.name,
         )
 
     @property
