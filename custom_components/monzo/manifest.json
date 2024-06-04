@@ -1,12 +1,12 @@
 {
     "domain": "monzo",
     "name": "Monzo",
-    "documentation": "https://github.com/scottjones4k/homeassistant-monzo",
-    "requirements": ["aiohttp>=3.9.4"],
     "codeowners": [],
-    "version": "1.0.0",
+    "config_flow": true,
+    "dependencies": ["application_credentials"],
+    "documentation": "https://github.com/scottjones4k/homeassistant-monzo",
     "iot_class": "cloud_polling",
     "loggers": ["monzo"],
-    "dependencies": ["application_credentials"],
-    "config_flow": true
+    "requirements": ["aiohttp>=3.9.4"],
+    "version": "1.0.0"
   }
