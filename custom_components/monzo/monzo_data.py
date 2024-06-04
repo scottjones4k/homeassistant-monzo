@@ -4,6 +4,7 @@ from homeassistant.util import Throttle
 
 from .const import DOMAIN, API_ENDPOINT
 from .monzo import MonzoClient
+from .models import PotModel
 
 MIN_TIME_BETWEEN_ACCOUNT_UPDATES = timedelta(minutes=30)
 MIN_TIME_BETWEEN_BALANCE_UPDATES = timedelta(minutes=5)
@@ -78,14 +79,12 @@ class MonzoData:
     async def unregister_webhook(self, webhook_id):
         await self._monzo_client.unregister_webhook(webhook_id)
 
-    async def deposit_pot(self, account_id: str, mask: str, pot_id: str, amount: int):
-        new_pot = await self._monzo_client.deposit_pot(account_id, mask, pot_id, amount)
-        pot = next(a for a in self.pots[account_id] if a.id == new_pot.id)
+    async def deposit_pot(self, pot: PotModel, amount: int):
+        new_pot = await self._monzo_client.deposit_pot(pot, amount)
         pot.balance = new_pot.balance
         return new_pot
 
-    async def withdraw_pot(self, account_id: str, mask: str, pot_id: str, amount: int):
-        new_pot = await self._monzo_client.withdraw_pot(account_id, mask, pot_id, amount)
-        pot = next(a for a in self.pots[account_id] if a.id == new_pot.id)
+    async def withdraw_pot(self, pot: PotModel, amount: int):
+        new_pot = await self._monzo_client.withdraw_pot(pot, amount)
         pot.balance = new_pot.balance
         return new_pot
