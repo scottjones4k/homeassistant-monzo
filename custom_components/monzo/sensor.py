@@ -193,9 +193,9 @@ class MonzoSensor(MonzoBaseEntity, SensorEntity):
     async def pot_deposit(self, amount_in_minor_units: int | None = None):
         if self._balance_type == "account":
             raise HomeAssistantError("supported only on Pot sensors")
-        await self.coordinator.deposit_pot(self.data.account_id, self.data.id, amount_in_minor_units)
+        await self.coordinator.deposit_pot(self.data.account_id, self.data.mask, self.data.id, amount_in_minor_units)
 
     async def pot_withdraw(self, amount_in_minor_units: int | None = None):
         if self._balance_type == "account":
             raise HomeAssistantError("supported only on Pot sensors")
-        await self.coordinator.withdraw_pot(self.data.account_id, self.data.id, amount_in_minor_units)
+        await self.coordinator.withdraw_pot(self.data.account_id, self.data.mask, self.data.id, amount_in_minor_units)
