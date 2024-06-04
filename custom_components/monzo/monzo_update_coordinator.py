@@ -61,7 +61,7 @@ class MonzoUpdateCoordinator(DataUpdateCoordinator):
         await self._monzo_client.unregister_webhook(webhook_id)
 
     async def deposit_pot(self, pot: PotModel, amount: int):
-        return await self._monzo_client.deposit_pot(account_id, mask, pot_id, amount)
+        return await self._monzo_client.deposit_pot(pot, amount)
 
     async def withdraw_pot(self, pot: PotModel, amount: int):
-        return await self._monzo_client.withdraw_pot(account_id, mask, pot_id, amount)
+        return await self._monzo_client.withdraw_pot(pot, amount)
