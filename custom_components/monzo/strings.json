@@ -25,6 +25,28 @@
         "default": "Successfully authenticated"
       }
     },
+    "services": {
+      "pot_deposit": {
+        "name": "Pot Deposit",
+        "description": "Deposits money into a pot.",
+        "fields": {
+          "amount_in_minor_units": {
+            "name": "Amount in minor units",
+            "description": "The amount of money to deposit in minor units."
+          }
+        }
+      },
+      "pot_withdraw": {
+        "name": "Pot Withdraw",
+        "description": "Withdraw money into a pot.",
+        "fields": {
+          "amount_in_minor_units": {
+            "name": "Amount in minor units",
+            "description": "The amount of money to withdraw in minor units."
+          }
+        }
+      }
+    },
     "entity": {
       "sensor": {
         "balance": {

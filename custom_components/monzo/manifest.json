@@ -1,7 +1,7 @@
 {
     "domain": "monzo",
     "name": "Monzo",
-    "documentation": "",
+    "documentation": "https://github.com/scottjones4k/homeassistant-monzo",
     "requirements": ["aiohttp>=3.9.4"],
     "codeowners": [],
     "version": "1.0.0",
