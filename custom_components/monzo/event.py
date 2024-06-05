@@ -3,12 +3,15 @@ from __future__ import annotations
 
 import logging
 
+from typing import Any
+
+from homeassistant.components.event import EventDeviceClass, EventEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from .monzo_update_coordinator import MonzoUpdateCoordinator
 
 from .const import (
@@ -49,20 +52,31 @@ class MonzoTransactionEventEntity(EventEntity):
 
     def __init__(self, coordinator, idx):
         """Initialize the sensor."""
-        self._coordinator = coordinator
+        self.coordinator = coordinator
         self.idx = idx
 
-        self._mask = self._coordinator.data[self.idx].mask
+        self._mask = self.coordinator.data[self.idx].mask
 
-        self.entity_id = ENTITY_ID_FORMAT.format(f"monzo-{self._mask}-transactions")
-
-        self._attr_name = "Transactions"
-        self._attr_event_types = ['transaction.created', 'transaction.updated']
-        self._attr_unique_id = self.entity_id
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, self.idx)}, name=f"Monzo Account {self._mask}"
+            entry_type=DeviceEntryType.SERVICE,
+            identifiers={(DOMAIN, str(self.idx))},
+            manufacturer="Monzo",
+            model=self.data.name,
+            name=self.data.name,
         )
+        self.entity_description = EventEntityDescription(
+            key="last_transaction", 
+            translation_key="last_transaction",
+            device_class=EventDeviceClass.MONETARY,
+            event_types=['transaction.created', 'transaction.updated']
+        )
+        self._attr_unique_id = f"{self.idx}_{self.entity_description.key}"
         self._attr_has_entity_name = True
+
+    @property
+    def data(self) -> dict[str, Any]:
+        """Shortcut to access coordinator data for the entity."""
+        return self.coordinator.data[self.idx]
 
     async def async_added_to_hass(self) -> None:
         """Call when entity is added to hass."""
@@ -81,7 +95,7 @@ class MonzoTransactionEventEntity(EventEntity):
     async def _async_receive_data(self, event_type, transaction) -> None:
         _LOGGER.debug("Transaction event received %s: %s", event_type, str(transaction))
         if transaction['account_id'] == self.idx and event_type == 'transaction.created':
-            self._trigger_event(event_type, map_transaction(self._coordinator, transaction))
+            self._trigger_event(event_type, map_transaction(self.coordinator, transaction))
             self.schedule_update_ha_state()
 
 def map_transaction(coordinator,transaction):
