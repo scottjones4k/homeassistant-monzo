@@ -67,7 +67,6 @@ class MonzoTransactionEventEntity(EventEntity):
         self.entity_description = EventEntityDescription(
             key="last_transaction", 
             translation_key="last_transaction",
-            device_class=EventDeviceClass.MONETARY,
             event_types=['transaction.created', 'transaction.updated']
         )
         self._attr_unique_id = f"{self.idx}_{self.entity_description.key}"
