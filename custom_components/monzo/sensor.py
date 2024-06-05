@@ -7,7 +7,7 @@ from typing import Any
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from homeassistant.components.sensor import SensorEntity, SensorStateClass, ENTITY_ID_FORMAT, SensorDeviceClass, SensorEntityDescription
+from homeassistant.components.sensor import SensorEntity, SensorStateClass, SensorDeviceClass, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant
@@ -15,20 +15,16 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.typing import StateType
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
     DataUpdateCoordinator,
 )
-from abc import abstractmethod
 from .const import (
     DOMAIN,
     SERVICE_POT_DEPOSIT,
     SERVICE_POT_WITHDRAW
 )
 
-from .monzo_data import MonzoData
-from .models import AccountModel, BalanceModel, PotModel
+from .models import BalanceModel
 from .monzo_update_coordinator import MonzoUpdateCoordinator
 from .entity import MonzoBaseEntity
 

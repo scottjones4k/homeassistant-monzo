@@ -1,36 +1,19 @@
 """Support for Monzo sensors."""
 from __future__ import annotations
 
-import logging
 import voluptuous as vol
 
-from homeassistant.components.sensor import SensorEntity, SensorStateClass, ENTITY_ID_FORMAT
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers import entity_platform
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
-from abc import abstractmethod
-from collections.abc import Callable
 from typing import Any
 
 from .const import (
-    DOMAIN,
-    SERVICE_POT_DEPOSIT,
-    SERVICE_POT_WITHDRAW
+    DOMAIN
 )
 
-from .monzo_data import MonzoData
-from .models import AccountModel, BalanceModel, PotModel
-from .monzo_update_coordinator import MonzoUpdateCoordinator
-
-_LOGGER = logging.getLogger(__name__)
 
 ATTR_NATIVE_BALANCE = "Balance in native currency"
 

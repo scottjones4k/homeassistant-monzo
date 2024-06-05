@@ -1,7 +1,6 @@
 from aiohttp import ClientSession
 from .monzo import AbstractAuth
 
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_entry_oauth2_flow
 
 class AsyncConfigEntryAuth(AbstractAuth):

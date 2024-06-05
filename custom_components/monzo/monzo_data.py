@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from homeassistant.util import Throttle
 
-from .const import DOMAIN, API_ENDPOINT
+from .const import API_ENDPOINT
 from .monzo import MonzoClient
 from .models import PotModel
 
