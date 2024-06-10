@@ -5,9 +5,8 @@ import logging
 
 from typing import Any
 
-from homeassistant.components.event import EventDeviceClass, EventEntityDescription
+from homeassistant.components.event import EventEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
@@ -20,8 +19,6 @@ from .const import (
 )
 
 from homeassistant.components.event import (
-    ENTITY_ID_FORMAT,
-    EventDeviceClass,
     EventEntity,
 )
 
@@ -50,7 +47,7 @@ async def async_setup_entry(
 class MonzoTransactionEventEntity(EventEntity):
     """Representation of a Monzo Event Entity."""
 
-    def __init__(self, coordinator, idx):
+    def __init__(self, coordinator: MonzoUpdateCoordinator, idx):
         """Initialize the sensor."""
         self.coordinator = coordinator
         self.idx = idx
@@ -91,13 +88,13 @@ class MonzoTransactionEventEntity(EventEntity):
         self._unsub_dispatcher()
 
     @callback
-    async def _async_receive_data(self, event_type, transaction) -> None:
+    async def _async_receive_data(self, event_type: str, transaction: dict[str, Any]) -> None:
         _LOGGER.debug("Transaction event received %s: %s", event_type, str(transaction))
         if transaction['account_id'] == self.idx and event_type == 'transaction.created':
             self._trigger_event(event_type, map_transaction(self.coordinator, transaction))
             self.schedule_update_ha_state()
 
-def map_transaction(coordinator,transaction):
+def map_transaction(coordinator: MonzoUpdateCoordinator, transaction: dict[str, Any]):
     pot_id = transaction['metadata'].get('pot_id')
     pot_name = None
     counterparty = {}

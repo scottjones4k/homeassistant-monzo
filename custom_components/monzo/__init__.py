@@ -13,7 +13,7 @@ from homeassistant.components import webhook
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 
 from . import api
-from .const import DOMAIN, API_ENDPOINT, WEBHOOK_UPDATE
+from .const import DOMAIN, WEBHOOK_UPDATE
 from .monzo_data import MonzoData
 from .monzo_update_coordinator import MonzoUpdateCoordinator
 

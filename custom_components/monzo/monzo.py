@@ -4,6 +4,7 @@ import logging
 import secrets
 
 from .models import AccountModel, BalanceModel, PotModel, WebhookModel
+from typing import Any
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ class AbstractAuth:
         """Return a valid access token."""
 
 class MonzoClient:
-    def __init__(self, auth: AbstractAuth, host):
+    def __init__(self, auth: AbstractAuth, host: str):
         self._auth = auth
         self._host = host
     
@@ -51,7 +52,7 @@ class MonzoClient:
             _raise_auth_or_response_error(data)
         return accounts
 
-    async def get_balance(self, account_id, account_mask, account_name):
+    async def get_balance(self, account_id: str, account_mask: str, account_name: str):
         data = await self.make_request("GET", f"balance?account_id={account_id}")
         try:
             balance =  BalanceModel(account_id, account_mask, account_name, data)
@@ -60,7 +61,7 @@ class MonzoClient:
             _raise_auth_or_response_error(data)
         return balance
 
-    async def get_pots(self, account_id, account_mask):
+    async def get_pots(self, account_id: str, account_mask: str):
         data = await self.make_request("GET", f"pots?current_account_id={account_id}")
         try:
             pots = [PotModel(account_id, account_mask, pot) for pot in data['pots'] if not pot['deleted']]
@@ -69,7 +70,7 @@ class MonzoClient:
             _raise_auth_or_response_error(data)
         return pots
 
-    async def get_webhooks(self, account_id):
+    async def get_webhooks(self, account_id: str):
         data = await self.make_request("GET", f"webhooks?account_id={account_id}")
         try:
             webhooks = [WebhookModel(hook) for hook in data['webhooks']]
@@ -78,7 +79,7 @@ class MonzoClient:
             _raise_auth_or_response_error(data)
         return webhooks
 
-    async def register_webhook(self, account_id, url):
+    async def register_webhook(self, account_id: str, url: str):
         existing = await self.get_webhooks(account_id)
         found_hooks = [w for w in existing if w.account_id == account_id and w.url == url]
         if any(found_hooks):
@@ -90,7 +91,7 @@ class MonzoClient:
         _LOGGER.debug("Registered Monzo account webhook using data: %s", str(data))
         return WebhookModel(data['webhook'])
 
-    async def unregister_webhook(self, webhook_id):
+    async def unregister_webhook(self, webhook_id: str):
         _LOGGER.debug("Unregistering Monzo account webhook: %s", webhook_id)
         data = await self.make_request("DELETE", f"webhooks/{webhook_id}")
         _LOGGER.debug("Unregistered Monzo account webhook using data: %s", str(data))

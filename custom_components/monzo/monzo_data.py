@@ -1,20 +1,10 @@
-from datetime import timedelta
-
-from homeassistant.util import Throttle
-
 from .const import API_ENDPOINT
-from .monzo import MonzoClient
+from .monzo import AbstractAuth, MonzoClient
 from .models import PotModel
 
-MIN_TIME_BETWEEN_ACCOUNT_UPDATES = timedelta(minutes=30)
-MIN_TIME_BETWEEN_BALANCE_UPDATES = timedelta(minutes=5)
-
 class MonzoData:
-    def __init__(self, auth):
+    def __init__(self, auth: AbstractAuth):
         self._monzo_client = MonzoClient(auth, API_ENDPOINT)
-        self.accounts = []
-        self.balances = {}
-        self.pots = {}
         self.webhooks = {}
 
     async def async_update_coordinated(self, _listening_idx):
@@ -31,44 +21,15 @@ class MonzoData:
                 lookup_table[webhook.id] = webhook
         return lookup_table
 
-    async def async_update(self):
-        await self.async_update_accounts()
-        await self.async_update_balances()
-        await self.async_update_pots()
-        await self.async_update_webhooks()
-        return self.accounts
-
-    @Throttle(MIN_TIME_BETWEEN_ACCOUNT_UPDATES)
-    async def async_update_accounts(self):
-        accounts = await self._monzo_client.get_accounts()
-        self.accounts = accounts
-        return accounts
-
     async def async_update_accounts_list(self):
         accounts = await self._monzo_client.get_accounts()
         return accounts
 
-    @Throttle(MIN_TIME_BETWEEN_BALANCE_UPDATES)
-    async def async_update_balances(self):
-        for account in self.accounts:
-            self.balances[account.id] = await self._monzo_client.get_balance(account.id, account.mask)
-
     async def async_update_balance_for_account(self, account_id, account_mask, account_name):
         return await self._monzo_client.get_balance(account_id, account_mask, account_name)
 
-    @Throttle(MIN_TIME_BETWEEN_BALANCE_UPDATES)
-    async def async_update_pots(self):
-        for account in self.accounts:
-            pots = await self._monzo_client.get_pots(account.id, account.mask)
-            self.pots[account.id] = pots
-
     async def async_update_pots_for_account(self, account_id, account_mask):
         return await self._monzo_client.get_pots(account_id, account_mask)
-
-    @Throttle(MIN_TIME_BETWEEN_ACCOUNT_UPDATES)
-    async def async_update_webhooks(self):
-        for account in self.accounts:
-            self.webhooks[account.id] = await self._monzo_client.get_webhooks(account.id)
 
     async def async_update_webhooks_for_account(self, account_id):
         return await self._monzo_client.get_webhooks(account_id)

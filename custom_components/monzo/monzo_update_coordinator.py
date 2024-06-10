@@ -5,6 +5,7 @@ import logging
 
 import async_timeout
 
+from .monzo_data import MonzoData
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
@@ -14,7 +15,7 @@ from .models import PotModel
 _LOGGER = logging.getLogger(__name__)
 
 class MonzoUpdateCoordinator(DataUpdateCoordinator):
-    def __init__(self, hass, client):
+    def __init__(self, hass, client: MonzoData):
         """Initialize my coordinator."""
         super().__init__(
             hass,
