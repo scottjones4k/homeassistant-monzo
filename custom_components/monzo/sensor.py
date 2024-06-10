@@ -145,13 +145,7 @@ class MonzoSensor(MonzoBaseEntity, SensorEntity):
         device_model: str
     ) -> None:
         """Initialize the sensor."""
-        self.idx = idx
         super().__init__(coordinator, idx, device_model)
-
-        if isinstance(self.data, BalanceModel):
-            self._balance_type = "account"
-        else:
-            self._balance_type = "pot"
 
         self._attr_state_class = SensorStateClass.TOTAL
 
@@ -187,11 +181,11 @@ class MonzoSensor(MonzoBaseEntity, SensorEntity):
         }
 
     async def pot_deposit(self, amount_in_minor_units: int | None = None):
-        if self._balance_type == "account":
+        if not self.idx.startswith("pot"):
             raise HomeAssistantError("supported only on Pot sensors")
         await self.coordinator.deposit_pot(self.data, amount_in_minor_units)
 
     async def pot_withdraw(self, amount_in_minor_units: int | None = None):
-        if self._balance_type == "account":
+        if not self.idx.startswith("pot"):
             raise HomeAssistantError("supported only on Pot sensors")
         await self.coordinator.withdraw_pot(self.data, amount_in_minor_units)

@@ -52,8 +52,6 @@ class MonzoTransactionEventEntity(EventEntity):
         self.coordinator = coordinator
         self.idx = idx
 
-        self._mask = self.coordinator.data[self.idx].mask
-
         self._attr_device_info = DeviceInfo(
             entry_type=DeviceEntryType.SERVICE,
             identifiers={(DOMAIN, str(self.idx))},

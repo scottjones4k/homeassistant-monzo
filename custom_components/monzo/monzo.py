@@ -52,19 +52,19 @@ class MonzoClient:
             _raise_auth_or_response_error(data)
         return accounts
 
-    async def get_balance(self, account_id: str, account_mask: str, account_name: str):
+    async def get_balance(self, account_id: str):
         data = await self.make_request("GET", f"balance?account_id={account_id}")
         try:
-            balance =  BalanceModel(account_id, account_mask, account_name, data)
+            balance =  BalanceModel(account_id, data)
         except KeyError:
             _LOGGER.error("Failed to get balance from Monzo API: %s", str(data))
             _raise_auth_or_response_error(data)
         return balance
 
-    async def get_pots(self, account_id: str, account_mask: str):
+    async def get_pots(self, account_id: str):
         data = await self.make_request("GET", f"pots?current_account_id={account_id}")
         try:
-            pots = [PotModel(account_id, account_mask, pot) for pot in data['pots'] if not pot['deleted']]
+            pots = [PotModel(account_id, pot) for pot in data['pots'] if not pot['deleted']]
         except KeyError:
             _LOGGER.error("Failed to get pots from Monzo API: %s", str(data))
             _raise_auth_or_response_error(data)
@@ -102,14 +102,14 @@ class MonzoClient:
         post_data = { 'source_account_id': pot.account_id, 'amount': amount, 'dedupe_id': secrets.token_hex()}
         data = await self.make_request("PUT", f"pots/{pot.id}/deposit", data=post_data)
         _LOGGER.debug("Deposit success: %s", str(data))
-        return PotModel(pot.account_id, pot.mask, data)
+        return PotModel(pot.account_id, data)
 
     async def withdraw_pot(self, pot: PotModel, amount: int):
         _LOGGER.debug("Depositing into pot: %s", pot.id)
         post_data = { 'destination_account_id': pot.account_id, 'amount': amount, 'dedupe_id': secrets.token_hex()}
         data = await self.make_request("PUT", f"pots/{pot.id}/withdraw", data=post_data)
         _LOGGER.debug("Deposit success: %s", str(data))
-        return PotModel(pot.account_id, pot.mask, data)
+        return PotModel(pot.account_id, data)
 
 async def _authorisation_expired(response: dict[str, Any]) -> bool:
     return CODE in response and response[CODE] == TOKEN_EXPIRY_CODE

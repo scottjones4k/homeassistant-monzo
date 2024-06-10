@@ -29,7 +29,6 @@ class WebhookModel():
 
 class BaseMonzoModel():
     account_id: str
-    mask: str
     name: str
     balance: float
     currency: str
@@ -38,10 +37,8 @@ class BalanceModel(BaseMonzoModel):
     spend_today: float
     total_balance: float
 
-    def __init__(self, account_id: str, mask: str, account_name: str, balance):
+    def __init__(self, account_id: str, balance):
         self.account_id = account_id
-        self.mask = mask
-        self.name = account_name
         self.balance = balance['balance']
         self.total_balance = balance['total_balance']
         self.currency = balance['currency']
@@ -56,9 +53,8 @@ class PotModel(BaseMonzoModel):
     pot_type: str
     cover_image_url: str
 
-    def __init__(self, account_id: str, mask: str, pot):
+    def __init__(self, account_id: str, pot):
         self.id = pot['id']
-        self.mask = mask
         self.account_id = account_id
         self.name = pot['name']
         self.balance = pot['balance']
