@@ -12,6 +12,7 @@ class MonzoData:
         accounts = await self.async_update_accounts_list()
         for account in accounts:
             balance = await self.async_update_balance_for_account(account.id)
+            balance.name = account.name
             pots = await self.async_update_pots_for_account(account.id)
             webhooks = await self.async_update_webhooks_for_account(account.id)
             lookup_table[account.id] = balance
