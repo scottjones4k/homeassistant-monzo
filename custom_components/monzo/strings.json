@@ -38,7 +38,7 @@
       },
       "pot_withdraw": {
         "name": "Pot Withdraw",
-        "description": "Withdraw money into a pot.",
+        "description": "Withdraw money from a pot.",
         "fields": {
           "amount_in_minor_units": {
             "name": "Amount in minor units",
