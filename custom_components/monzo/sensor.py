@@ -6,6 +6,7 @@ import voluptuous as vol
 from typing import Any
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime
 
 from homeassistant.components.sensor import SensorEntity, SensorStateClass, SensorDeviceClass, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
@@ -18,6 +19,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
+from homeassistant.util import dt as dt_util
 from .const import (
     DOMAIN,
     SERVICE_POT_DEPOSIT,
@@ -45,12 +47,14 @@ class MonzoSensorEntityDescription(SensorEntityDescription):
     """Describes Monzo sensor entity."""
 
     value_fn: Callable[[dict[str, Any]], StateType]
+    resets_daily: bool
 
 ACCOUNT_SENSORS = (
     MonzoSensorEntityDescription(
         key="balance",
         translation_key="balance",
         value_fn=lambda data: data.balance / 100,
+        resets_daily=False,
         device_class=SensorDeviceClass.MONETARY,
         native_unit_of_measurement="GBP",
         suggested_display_precision=2,
@@ -59,6 +63,7 @@ ACCOUNT_SENSORS = (
         key="total_balance",
         translation_key="total_balance",
         value_fn=lambda data: data.total_balance / 100,
+        resets_daily=False,
         device_class=SensorDeviceClass.MONETARY,
         native_unit_of_measurement="GBP",
         suggested_display_precision=2,
@@ -67,6 +72,7 @@ ACCOUNT_SENSORS = (
         key="spend_today",
         translation_key="spend_today",
         value_fn=lambda data: data.spend_today / 100,
+        resets_daily=True,
         device_class=SensorDeviceClass.MONETARY,
         native_unit_of_measurement="GBP",
         suggested_display_precision=2,
@@ -78,6 +84,7 @@ POT_SENSORS = (
         key="pot_balance",
         translation_key="pot_balance",
         value_fn=lambda data: data.balance / 100,
+        resets_daily=False,
         device_class=SensorDeviceClass.MONETARY,
         native_unit_of_measurement="GBP",
         suggested_display_precision=2,
@@ -179,6 +186,13 @@ class MonzoSensor(MonzoBaseEntity, SensorEntity):
             'pot_type': self.data.pot_type,
             'cover_image_url': self.data.cover_image_url
         }
+    
+    @property
+    def last_reset(self) -> datetime:
+        """These values reset every day."""
+        if self.entity_description.resets_daily:
+            return dt_util.start_of_local_day()
+        return None
 
     async def pot_deposit(self, amount_in_minor_units: int | None = None):
         if not self.idx.startswith("pot"):
