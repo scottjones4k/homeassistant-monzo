@@ -26,7 +26,7 @@ from .const import (
     SERVICE_POT_WITHDRAW
 )
 
-from .models import BalanceModel
+from .api.models.balance import Balance
 from .monzo_update_coordinator import MonzoUpdateCoordinator
 from .entity import MonzoBaseEntity
 
@@ -174,7 +174,7 @@ class MonzoSensor(MonzoBaseEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         """Return the state attributes of the sensor."""
-        if isinstance(self.data, BalanceModel):
+        if isinstance(self.data, Balance):
             return {
                 ATTR_ATTRIBUTION: ATTRIBUTION,
             }

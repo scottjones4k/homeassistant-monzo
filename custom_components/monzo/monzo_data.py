@@ -1,6 +1,7 @@
 from .const import API_ENDPOINT
 from .monzo import AbstractAuth, MonzoClient
-from .models import PotModel
+from .api.client import MonzoClient
+from .api.models import PotModel
 
 class MonzoData:
     def __init__(self, auth: AbstractAuth):

@@ -12,8 +12,8 @@ from homeassistant.helpers import aiohttp_client, config_entry_oauth2_flow
 from homeassistant.components import webhook
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 
-from . import api
 from .const import DOMAIN, WEBHOOK_UPDATE
+from .monzo import AsyncConfigEntryAuth
 from .monzo_data import MonzoData
 from .monzo_update_coordinator import MonzoUpdateCoordinator
 
@@ -46,7 +46,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
 
     # If using an aiohttp-based API lib
-    auth = api.AsyncConfigEntryAuth(
+    auth = AsyncConfigEntryAuth(
         aiohttp_client.async_get_clientsession(hass), session
     )
 

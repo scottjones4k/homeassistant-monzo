@@ -7,16 +7,6 @@ ACCOUNT_NAMES = {
     "uk_rewards": "Cashback",
 }
 
-class AccountModel():
-    id: str
-    mask: str
-    name: str
-
-    def __init__(self, account):
-        self.id = account['id']
-        self.mask = account['account_number'][-4:]
-        self.name = ACCOUNT_NAMES.get(account["type"], account["type"])
-
 class WebhookModel():
     id: str
     account_id: str
@@ -32,17 +22,6 @@ class BaseMonzoModel():
     name: str
     balance: float
     currency: str
-
-class BalanceModel(BaseMonzoModel):
-    spend_today: float
-    total_balance: float
-
-    def __init__(self, account_id: str, balance):
-        self.account_id = account_id
-        self.balance = balance['balance']
-        self.total_balance = balance['total_balance']
-        self.currency = balance['currency']
-        self.spend_today = -1*balance['spend_today']
 
 class PotModel(BaseMonzoModel):
     id: str
