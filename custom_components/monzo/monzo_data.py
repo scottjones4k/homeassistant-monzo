@@ -1,7 +1,7 @@
 from .const import API_ENDPOINT
 from .monzo import AbstractAuth
 from .api.client import MonzoClient
-from .api.models import PotModel
+from .api.models.pot import Pot
 
 class MonzoData:
     def __init__(self, auth: AbstractAuth):
@@ -18,6 +18,7 @@ class MonzoData:
             webhooks = await self.async_update_webhooks_for_account(account.id)
             lookup_table[account.id] = balance
             for pot in pots:
+                pot.account_id = account.id
                 lookup_table[pot.id] = pot
             for webhook in webhooks:
                 lookup_table[webhook.id] = webhook
@@ -42,12 +43,14 @@ class MonzoData:
     async def unregister_webhook(self, webhook_id):
         await self._monzo_client.unregister_webhook(webhook_id)
 
-    async def deposit_pot(self, pot: PotModel, amount: int):
+    async def deposit_pot(self, pot: Pot, amount: int):
         new_pot = await self._monzo_client.deposit_pot(pot, amount)
         pot.balance = new_pot.balance
+        new_pot.account_id = pot.account_id
         return new_pot
 
-    async def withdraw_pot(self, pot: PotModel, amount: int):
+    async def withdraw_pot(self, pot: Pot, amount: int):
         new_pot = await self._monzo_client.withdraw_pot(pot, amount)
         pot.balance = new_pot.balance
+        new_pot.account_id = pot.account_id
         return new_pot

@@ -10,7 +10,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .api.models import PotModel
+from .api.models.pot import Pot
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,8 +55,8 @@ class MonzoUpdateCoordinator(DataUpdateCoordinator):
     async def unregister_webhook(self, webhook_id):
         await self._monzo_client.unregister_webhook(webhook_id)
 
-    async def deposit_pot(self, pot: PotModel, amount: int):
+    async def deposit_pot(self, pot: Pot, amount: int):
         return await self._monzo_client.deposit_pot(pot, amount)
 
-    async def withdraw_pot(self, pot: PotModel, amount: int):
+    async def withdraw_pot(self, pot: Pot, amount: int):
         return await self._monzo_client.withdraw_pot(pot, amount)

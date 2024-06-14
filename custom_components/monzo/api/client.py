@@ -6,8 +6,9 @@ from typing import Any
 from aiohttp import ClientResponse
 from .models.account import Account
 from .models.balance import Balance
+from .models.pot import Pot
 from .auth import AbstractAuth
-from .models import PotModel, WebhookModel
+from .models import WebhookModel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,7 +59,7 @@ class MonzoClient:
     async def get_pots(self, account_id: str):
         data = await self.make_request("GET", f"pots?current_account_id={account_id}")
         try:
-            pots = [PotModel(account_id, pot) for pot in data['pots'] if not pot['deleted']]
+            pots = [Pot(**pot) for pot in data['pots'] if not pot['deleted']]
         except KeyError:
             _LOGGER.error("Failed to get pots from Monzo API: %s", str(data))
             _raise_auth_or_response_error(data)
@@ -91,19 +92,19 @@ class MonzoClient:
         _LOGGER.debug("Unregistered Monzo account webhook using data: %s", str(data))
         return data
 
-    async def deposit_pot(self, pot: PotModel, amount: int):
+    async def deposit_pot(self, pot: Pot, amount: int):
         _LOGGER.debug("Depositing into pot: %s", pot.id)
         post_data = { 'source_account_id': pot.account_id, 'amount': amount, 'dedupe_id': secrets.token_hex()}
         data = await self.make_request("PUT", f"pots/{pot.id}/deposit", data=post_data)
         _LOGGER.debug("Deposit success: %s", str(data))
-        return PotModel(pot.account_id, data)
+        return Pot(**data)
 
-    async def withdraw_pot(self, pot: PotModel, amount: int):
+    async def withdraw_pot(self, pot: Pot, amount: int):
         _LOGGER.debug("Depositing into pot: %s", pot.id)
         post_data = { 'destination_account_id': pot.account_id, 'amount': amount, 'dedupe_id': secrets.token_hex()}
         data = await self.make_request("PUT", f"pots/{pot.id}/withdraw", data=post_data)
         _LOGGER.debug("Deposit success: %s", str(data))
-        return PotModel(pot.account_id, data)
+        return Pot(**data)
 
 async def _authorisation_expired(response: dict[str, Any]) -> bool:
     return CODE in response and response[CODE] == TOKEN_EXPIRY_CODE
