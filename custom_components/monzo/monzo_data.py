@@ -1,5 +1,5 @@
 from .const import API_ENDPOINT
-from .monzo import AbstractAuth, MonzoClient
+from .monzo import AbstractAuth
 from .api.client import MonzoClient
 from .api.models import PotModel
 

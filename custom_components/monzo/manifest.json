@@ -7,6 +7,6 @@
     "documentation": "https://github.com/scottjones4k/homeassistant-monzo",
     "iot_class": "cloud_polling",
     "loggers": ["monzo"],
-    "requirements": ["aiohttp>=3.9.4"],
+    "requirements": ["aiohttp>=3.9.4", "pydantic>=1.10.15"],
     "version": "1.0.0"
   }
