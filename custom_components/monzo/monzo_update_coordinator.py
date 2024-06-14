@@ -10,7 +10,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .models import PotModel
+from .api.models import PotModel
 
 _LOGGER = logging.getLogger(__name__)
 
