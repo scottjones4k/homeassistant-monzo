@@ -5,3 +5,5 @@ class Balance(BaseModel):
     currency: str
     spend_today: float
     total_balance: float
+
+    name: str = "Balance"
