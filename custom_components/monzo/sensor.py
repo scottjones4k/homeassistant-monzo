@@ -183,7 +183,7 @@ class MonzoSensor(MonzoBaseEntity, SensorEntity):
             'goal_amount': (self.data.goal_amount or 0)/100,
             'deleted': self.data.deleted,
             'locked': self.data.locked,
-            'pot_type': self.data.pot_type,
+            'pot_type': self.data.type,
             'cover_image_url': self.data.cover_image_url
         }
     
