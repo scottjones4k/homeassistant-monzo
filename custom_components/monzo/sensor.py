@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 import voluptuous as vol
-from typing import Any
+from typing import Any, Optional
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
@@ -188,7 +188,7 @@ class MonzoSensor(MonzoBaseEntity, SensorEntity):
         }
     
     @property
-    def last_reset(self) -> datetime:
+    def last_reset(self) -> Optional[datetime]:
         """These values reset every day."""
         if self.entity_description.resets_daily:
             return dt_util.start_of_local_day()
