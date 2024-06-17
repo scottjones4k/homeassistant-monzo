@@ -7,8 +7,8 @@ from aiohttp import ClientResponse
 from .models.account import Account
 from .models.balance import Balance
 from .models.pot import Pot
+from .models.webhook import Webhook
 from .auth import AbstractAuth
-from .models import WebhookModel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ class MonzoClient:
     async def get_webhooks(self, account_id: str):
         data = await self.make_request("GET", f"webhooks?account_id={account_id}")
         try:
-            webhooks = [WebhookModel(hook) for hook in data['webhooks']]
+            webhooks = [Webhook(**hook) for hook in data['webhooks']]
         except KeyError:
             _LOGGER.error("Failed to get webhooks from Monzo API: %s", str(data))
             _raise_auth_or_response_error(data)
@@ -84,7 +84,7 @@ class MonzoClient:
         post_data = { 'account_id': account_id, 'url': url}
         data = await self.make_request("POST", "webhooks", data=post_data)
         _LOGGER.debug("Registered Monzo account webhook using data: %s", str(data))
-        return WebhookModel(data['webhook'])
+        return Webhook(**data['webhook'])
 
     async def unregister_webhook(self, webhook_id: str):
         _LOGGER.debug("Unregistering Monzo account webhook: %s", webhook_id)

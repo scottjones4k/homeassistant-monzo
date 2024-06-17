@@ -11,8 +11,10 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
-from .monzo_update_coordinator import MonzoUpdateCoordinator
 
+from .api.models.transaction import Transaction
+
+from .monzo_update_coordinator import MonzoUpdateCoordinator
 from .const import (
     DOMAIN,
     WEBHOOK_UPDATE
@@ -86,28 +88,28 @@ class MonzoTransactionEventEntity(EventEntity):
         self._unsub_dispatcher()
 
     @callback
-    async def _async_receive_data(self, event_type: str, transaction: dict[str, Any]) -> None:
+    async def _async_receive_data(self, event_type: str, transaction: Transaction) -> None:
         _LOGGER.debug("Transaction event received %s: %s", event_type, str(transaction))
-        if transaction['account_id'] == self.idx and event_type == 'transaction.created':
+        if transaction.account_id == self.idx and event_type == 'transaction.created':
             self._trigger_event(event_type, map_transaction(self.coordinator, transaction))
             self.schedule_update_ha_state()
 
-def map_transaction(coordinator: MonzoUpdateCoordinator, transaction: dict[str, Any]):
-    pot_id = transaction['metadata'].get('pot_id')
+def map_transaction(coordinator: MonzoUpdateCoordinator, transaction: Transaction):
+    pot_id = transaction.metadata.pot_id
     pot_name = None
     counterparty = {}
-    match transaction['scheme']:
+    match transaction.scheme:
         case 'mastercard':
-            if transaction.get('atm_fee_detailed') is not None and 'withdrawal_amount' in transaction['atm_fee_detailed']:
+            if transaction.atm_fee_detailed is not None and transaction.atm_fee_detailed.withdrawal_amount is not None:
                 transaction_type = 'ATM Withdrawal'
             else:
                 transaction_type = 'Card Payment'
         case 'payport_faster_payments':
             transaction_type = 'Faster Payment'
             counterparty = {
-                'account_number': transaction['counterparty']['account_number'],
-                'name': transaction['counterparty']['name'],
-                'sort_code': transaction['counterparty']['sort_code']
+                'account_number': transaction.counterparty.account_number,
+                'name': transaction.counterparty.name,
+                'sort_code': transaction.counterparty.sort_code
             }
         case 'uk_retail_pot':
             transaction_type = 'Pot Deposit'
@@ -117,30 +119,30 @@ def map_transaction(coordinator: MonzoUpdateCoordinator, transaction: dict[str, 
         case 'bacs':
             transaction_type = 'Direct Debit'
             counterparty = {
-                'account_number': transaction['counterparty']['account_number'],
-                'name': transaction['counterparty']['name'],
-                'sort_code': transaction['counterparty']['sort_code']
+                'account_number': transaction.counterparty.account_number,
+                'name': transaction.counterparty.name,
+                'sort_code': transaction.counterparty.sort_code
             }
-            if 'bills_pot_id' in transaction['metadata']:
-                pot_id = transaction['metadata'].get('bills_pot_id')
+            if transaction.metadata.bills_pot_id is not None:
+                pot_id = transaction.metadata.bills_pot_id
                 pot_name = coordinator.data[pot_id].name
         case _:
-            _LOGGER.warn("Unknown transaction scheme: %s", transaction['scheme'])
+            _LOGGER.warn("Unknown transaction scheme: %s", transaction.scheme)
             transaction_type = 'Unknown'
     return {
-        'Incoming': transaction['amount'] > 0,
-        'Amount': abs(transaction['amount']/100),
-        'Description': transaction['description'],
-        'Currency': transaction['currency'],
-        'Date Time': transaction['created'],
-        'Transaction Id': transaction['id'],
-        'Account Id': transaction['account_id'],
-        'Notes': transaction['metadata'].get('notes'),
-        'Triggered By': transaction['metadata'].get('triggered_by'),
-        'Android Pay': transaction['metadata'].get('tokenization_method') == 'android_pay',
+        'Incoming': transaction.amount > 0,
+        'Amount': abs(transaction.amount/100),
+        'Description': transaction.description,
+        'Currency': transaction.currency,
+        'Date Time': transaction.created,
+        'Transaction Id': transaction.id,
+        'Account Id': transaction.account_id,
+        'Notes': transaction.metadata.notes,
+        'Triggered By': transaction.metadata.triggered_by,
+        'Android Pay': transaction.metadata.tokenization_method == 'android_pay',
         'Transaction Type': transaction_type,
-        'Is Roundup': transaction['metadata'].get('trigger') == 'coin_jar',
-        'Is Bill Payment': transaction['metadata'].get('trigger') == 'committed_spending',
+        'Is Roundup': transaction.metadata.triggered_by == 'coin_jar',
+        'Is Bill Payment': transaction.metadata.trigger == 'committed_spending',
         'Pot Id': pot_id,
         'Pot Name': pot_name,
         'Counterparty': counterparty

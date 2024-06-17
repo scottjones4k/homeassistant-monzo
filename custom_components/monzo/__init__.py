@@ -12,6 +12,8 @@ from homeassistant.helpers import aiohttp_client, config_entry_oauth2_flow
 from homeassistant.components import webhook
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 
+from .api.models.transaction import TransactionWrapper
+
 from .const import DOMAIN, WEBHOOK_UPDATE
 from .monzo import AsyncConfigEntryAuth
 from .monzo_data import MonzoData
@@ -24,13 +26,14 @@ _LOGGER = logging.getLogger(__name__)
 async def handle_webhook(hass, webhook_id, request):
     """Handle incoming webhook with Monzo Client request."""
     data = await request.json()
-    account_id = data['data']['account_id']
+    transaction_wrapper = TransactionWrapper(**data)
+    account_id = transaction_wrapper.data.account_id
 
     async_dispatcher_send(
         hass,
         f"{WEBHOOK_UPDATE}-{account_id}",
-        data['type'],
-        data['data']
+        transaction_wrapper.type,
+        transaction_wrapper.data,
     )
     _LOGGER.info("Received Monzo webhook: %s", account_id)
     return web.Response(text="Logged")
