@@ -13,9 +13,9 @@ class AtmFeeDetailed(BaseModel):
     withdrawal_amount: int
 
 class Counterparty(BaseModel):
-    name: str
-    account_number: str
-    sort_code: str
+    name: str | None
+    account_number: str | None
+    sort_code: str | None
 
 class Transaction(BaseModel):
     account_id: str
