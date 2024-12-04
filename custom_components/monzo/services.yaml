@@ -9,7 +9,7 @@ pot_deposit:
       selector:
         number:
           min: 0
-          max: 65536
+          max: 200000
 pot_withdraw:
   target:
     entity:
@@ -21,4 +21,4 @@ pot_withdraw:
       selector:
         number:
           min: 0
-          max: 65536
+          max: 200000
