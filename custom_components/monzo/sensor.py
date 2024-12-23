@@ -39,7 +39,7 @@ DEFAULT_COIN_ICON = "mdi:cash"
 ATTRIBUTION = "Data provided by Monzo"
 
 POT_SERVICE_SCHEMA = {
-    vol.Required('amount_in_minor_units'): vol.All(vol.Coerce(int), vol.Range(0, 65535)),
+    vol.Required('amount_in_minor_units'): vol.All(vol.Coerce(int), vol.Range(0, 200000)),
 }
 
 @dataclass(frozen=True, kw_only=True)
