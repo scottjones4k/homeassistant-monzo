@@ -18,6 +18,7 @@ from .const import DOMAIN, WEBHOOK_UPDATE
 from .monzo import AsyncConfigEntryAuth
 from .monzo_data import MonzoData
 from .monzo_update_coordinator import MonzoUpdateCoordinator
+from .services import setup_services
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.EVENT]
 
@@ -77,6 +78,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await coordinator.register_webhook(idx, webhook_url)
             _LOGGER.info("Registered Monzo account webhook: %s : %s", idx, webhook_url)
     _LOGGER.info("Registered HASS Monzo webhook: %s", webhook_url)
+
+    setup_services(hass, entry)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

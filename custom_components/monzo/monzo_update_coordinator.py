@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 import logging
+import asyncio
 
 import async_timeout
 
@@ -14,6 +15,8 @@ from .api.models.pot import Pot
 
 _LOGGER = logging.getLogger(__name__)
 
+sem = asyncio.Semaphore(10)
+
 class MonzoUpdateCoordinator(DataUpdateCoordinator):
     def __init__(self, hass, client: MonzoData):
         """Initialize my coordinator."""
@@ -23,7 +26,7 @@ class MonzoUpdateCoordinator(DataUpdateCoordinator):
             # Name of the data. For logging purposes.
             name="Monzo",
             # Polling interval. Will only be polled if there are subscribers.
-            update_interval=timedelta(minutes=5),
+            update_interval=timedelta(hours=6),
         )
         self._monzo_client = client
 
@@ -48,6 +51,12 @@ class MonzoUpdateCoordinator(DataUpdateCoordinator):
         #     raise ConfigEntryAuthFailed from err
         # except ApiError as err:
         #     raise UpdateFailed(f"Error communicating with API: {err}")
+
+    async def async_force_update(self):
+        if not sem.locked():
+            async with sem:
+                data = await self._async_update_data()
+                await self.async_set_updated_data(data)
     
     async def register_webhook(self, account_id, url):
         await self._monzo_client.register_webhook(account_id, url)

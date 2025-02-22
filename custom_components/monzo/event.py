@@ -93,6 +93,7 @@ class MonzoTransactionEventEntity(EventEntity):
         if transaction.account_id == self.idx and event_type == 'transaction.created':
             self._trigger_event(event_type, map_transaction(self.coordinator, transaction))
             self.schedule_update_ha_state()
+            await self.coordinator.async_force_update()
 
 def map_transaction(coordinator: MonzoUpdateCoordinator, transaction: Transaction):
     pot_id = transaction.metadata.pot_id

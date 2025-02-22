@@ -38,13 +38,17 @@
     },
     "pot_withdraw": {
       "name": "Pot Withdraw",
-      "description": "Withdraw money into a pot.",
+      "description": "Withdraw money from a pot.",
       "fields": {
         "amount_in_minor_units": {
           "name": "Amount in minor units",
           "description": "The amount of money to withdraw in minor units."
         }
       }
+    },
+    "update": {
+      "name": "Update entities",
+      "description": "Updates all entities"
     }
   },
   "entity": {

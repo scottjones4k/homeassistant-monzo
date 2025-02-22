@@ -22,3 +22,4 @@ pot_withdraw:
         number:
           min: 0
           max: 200000
+update:

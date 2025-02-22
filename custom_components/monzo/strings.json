@@ -45,6 +45,10 @@
             "description": "The amount of money to withdraw in minor units."
           }
         }
+      },
+      "update": {
+        "name": "Update entities",
+        "description": "Updates all entities"
       }
     },
     "entity": {

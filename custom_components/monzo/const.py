@@ -13,3 +13,4 @@ WEBHOOK_UPDATE = f"{DOMAIN}_webhook_update"
 
 SERVICE_POT_DEPOSIT = "pot_deposit"
 SERVICE_POT_WITHDRAW = "pot_withdraw"
+SERVICE_UPDATE = "update"
