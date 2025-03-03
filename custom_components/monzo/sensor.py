@@ -138,7 +138,7 @@ async def async_setup_entry(
 
     categories = [
         MonzoSensor(category_coordinator, entity_description, category, "Category")
-        for entity_description in POT_SENSORS
+        for entity_description in CATEGORY_SENSORS
         for category in category_coordinator.data
     ]
     # async_add_entities(
