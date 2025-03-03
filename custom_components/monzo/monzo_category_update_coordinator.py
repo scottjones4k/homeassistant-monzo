@@ -58,8 +58,14 @@ class MonzoCategoryUpdateCoordinator(DataUpdateCoordinator):
             twenty_eighth = date.today().replace(day=28)
             if date.today() < twenty_eighth:
                 twenty_eighth = twenty_eighth.replace(month=twenty_eighth.month-1)
-            data = await self._monzo_client.async_get_transactions(self._accountIds[0], twenty_eighth)
-            return reduce(reduce_transactions, data)
+            data = self._monzo_client.async_get_transactions(self._accountIds[0], twenty_eighth)
+            categories = {}
+            async for transaction in data:
+                for category, amount in transaction.categories.items():
+                    if category not in categories:
+                        categories[category] = 0
+                    categories[category] += amount
+            return categories
         # except ApiAuthError as err:
         #     # Raising ConfigEntryAuthFailed will cancel future updates
         #     # and start a config flow with SOURCE_REAUTH (async_step_reauth)
