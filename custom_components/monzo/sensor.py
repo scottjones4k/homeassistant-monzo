@@ -28,7 +28,7 @@ from .const import (
 
 from .api.models.balance import Balance
 from .monzo_update_coordinator import MonzoUpdateCoordinator
-from .monzo_category_update_coordinator import MonzoCategoryUpdateCoordinator
+from .monzo_category_update_coordinator import Category, MonzoCategoryUpdateCoordinator
 from .entity import MonzoBaseEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -195,6 +195,10 @@ class MonzoSensor(MonzoBaseEntity, SensorEntity):
     def extra_state_attributes(self):
         """Return the state attributes of the sensor."""
         if isinstance(self.data, Balance):
+            return {
+                ATTR_ATTRIBUTION: ATTRIBUTION,
+            }
+        elif isinstance(self.data, Category):
             return {
                 ATTR_ATTRIBUTION: ATTRIBUTION,
             }
