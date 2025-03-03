@@ -91,7 +91,7 @@ class MonzoCategoryUpdateCoordinator(DataUpdateCoordinator):
             data = self._monzo_client.async_get_transactions(self._accountIds[0], twenty_eighth)
             categories: dict[str, Category] = {}
             async for transaction in data:
-                if transaction.decline_reason is not None:
+                if transaction.decline_reason is None:
                     for category, amount in transaction.categories.items():
                         if category in CATEGORY_LIST:
                             if category not in categories:
