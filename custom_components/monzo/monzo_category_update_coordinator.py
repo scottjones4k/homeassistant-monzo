@@ -27,6 +27,11 @@ def reduce_transactions(a: dict[str, int], b: Transaction) -> dict[str, int]:
         a[b.category] = b.amount
     return a
 
+class Category:
+    def __init__(self, name, amount):
+        self.name = name
+        self.amount = amount
+
 class MonzoCategoryUpdateCoordinator(DataUpdateCoordinator):
     def __init__(self, hass, client: MonzoData, accountIds):
         """Initialize my coordinator."""
@@ -59,11 +64,11 @@ class MonzoCategoryUpdateCoordinator(DataUpdateCoordinator):
             if date.today() < twenty_eighth:
                 twenty_eighth = twenty_eighth.replace(month=twenty_eighth.month-1)
             data = self._monzo_client.async_get_transactions(self._accountIds[0], twenty_eighth)
-            categories = {}
+            categories: dict[str, Category] = {}
             async for transaction in data:
                 for category, amount in transaction.categories.items():
                     if category not in categories:
-                        categories[category] = { "name": category, amount: 0 }
+                        categories[category] = Category(category, 0)
                     categories[category].amount += amount
             return categories
         # except ApiAuthError as err:
