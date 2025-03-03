@@ -201,6 +201,7 @@ class MonzoSensor(MonzoBaseEntity, SensorEntity):
         elif isinstance(self.data, Category):
             return {
                 ATTR_ATTRIBUTION: ATTRIBUTION,
+                'target': self.data.target,
             }
         return {
             ATTR_ATTRIBUTION: ATTRIBUTION,

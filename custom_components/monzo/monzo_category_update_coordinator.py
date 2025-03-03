@@ -27,9 +27,34 @@ def reduce_transactions(a: dict[str, int], b: Transaction) -> dict[str, int]:
         a[b.category] = b.amount
     return a
 
+CATEGORY_LIST = {
+    'category_0000AgJVm8aomFv6bdeQrp': ('Days Out', 100),
+    'category_0000AqK42MhFy0wyBj8dkI': ('Medication', 100),
+    # ('category_0000AfcPM8zPj3J2gow1C5', 'Debt Repayment'),
+    'category_0000AffrfoYAoCtlFwBOb3': ('Rowan', 100),
+    'category_0000AfMkAV0f1Efrz82aWX': ('Parking', 72),
+    'category_0000AfMkEkgEhLWktFgQp0': ('Work', 50),
+    'category_0000Ajn5JWbJo5vXQDm0DB': ('Pets', 50),
+    'eating_out': ('Eating Out', 60),
+    # ('entertainment', 'Entertainment'),
+    'groceries': ('Groceries', 650)
+    # ('income', 'Income'),
+    # ('savings', 'Savings'),
+    # ('shopping', 'Shopping'),
+    # ('transfers', 'Transfers'),
+    # ('transport', 'Transport'),
+    # ('bills', 'Bills'),
+    # ('cash', 'Cash'),
+    # ('general', 'General'),
+    # ('holidays', 'Holidays'),
+    # ('personal_care', 'Personal Care'),
+}
+
 class Category:
-    def __init__(self, name, amount):
-        self.name = name
+    def __init__(self, id, amount):
+        self.id = id
+        self.name = CATEGORY_LIST[id][0]
+        self.target = CATEGORY_LIST[id][1]
         self.amount = amount
 
 class MonzoCategoryUpdateCoordinator(DataUpdateCoordinator):
@@ -66,10 +91,12 @@ class MonzoCategoryUpdateCoordinator(DataUpdateCoordinator):
             data = self._monzo_client.async_get_transactions(self._accountIds[0], twenty_eighth)
             categories: dict[str, Category] = {}
             async for transaction in data:
-                for category, amount in transaction.categories.items():
-                    if category not in categories:
-                        categories[category] = Category(category, 0)
-                    categories[category].amount += amount
+                if transaction.decline_reason is not None:
+                    for category, amount in transaction.categories.items():
+                        if category in CATEGORY_LIST:
+                            if category not in categories:
+                                categories[category] = Category(category, 0)
+                            categories[category].amount += amount
             return categories
         # except ApiAuthError as err:
         #     # Raising ConfigEntryAuthFailed will cancel future updates
