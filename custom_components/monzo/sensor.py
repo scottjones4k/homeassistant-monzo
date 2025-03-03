@@ -96,7 +96,7 @@ CATEGORY_SENSORS = (
     MonzoSensorEntityDescription(
         key="category_spend",
         translation_key="category_spend",
-        value_fn=lambda data: data / -100,
+        value_fn=lambda data: data.amount / -100,
         resets_daily=False,
         device_class=SensorDeviceClass.MONETARY,
         native_unit_of_measurement="GBP",

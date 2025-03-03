@@ -63,8 +63,8 @@ class MonzoCategoryUpdateCoordinator(DataUpdateCoordinator):
             async for transaction in data:
                 for category, amount in transaction.categories.items():
                     if category not in categories:
-                        categories[category] = 0
-                    categories[category] += amount
+                        categories[category] = { "name": category, amount: 0 }
+                    categories[category].amount += amount
             return categories
         # except ApiAuthError as err:
         #     # Raising ConfigEntryAuthFailed will cancel future updates
