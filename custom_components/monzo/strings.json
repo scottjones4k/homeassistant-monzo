@@ -49,6 +49,10 @@
       "update": {
         "name": "Update entities",
         "description": "Updates all entities"
+      },
+      "category_update": {
+        "name": "Update categories",
+        "description": "Updates all categories"
       }
     },
     "entity": {
@@ -69,6 +73,9 @@
         },
         "spend_today": {
           "name": "Spend Today"
+        },
+        "category_spend": {
+          "name": "Category Spend"
         }
       }
     }

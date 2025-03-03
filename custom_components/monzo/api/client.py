@@ -1,12 +1,14 @@
 import secrets
 import logging
 
-from typing import Any
+from datetime import date
+from typing import Any, AsyncIterator
 
 from aiohttp import ClientResponse
 from .models.account import Account
 from .models.balance import Balance
 from .models.pot import Pot
+from .models.transaction import Transaction
 from .models.webhook import Webhook
 from .auth import AbstractAuth
 
@@ -15,6 +17,8 @@ _LOGGER = logging.getLogger(__name__)
 TOKEN_EXPIRY_CODE = "unauthorized.bad_access_token.expired"
 TOKEN_INSUFFICIENT_PERMISSIONS = "forbidden.insufficient_permissions"
 CODE = "code"
+
+PAGINATION_LIMIT = 30
 
 class MonzoClient:
     def __init__(self, auth: AbstractAuth, host: str):
@@ -64,6 +68,22 @@ class MonzoClient:
             _LOGGER.error("Failed to get pots from Monzo API: %s", str(data))
             _raise_auth_or_response_error(data)
         return pots
+
+    async def async_get_transactions(self, account_id: str, start_date: date) -> AsyncIterator[Transaction]:
+        start_date_str = start_date.strftime("%Y-%m-%dT00:00:00Z")
+        data = await self.make_request("GET", f"/transactions?account_id={account_id}&since={start_date_str}&limit={PAGINATION_LIMIT}")
+        try:
+            while 'transactions' in data:
+                for transaction in data['transactions']:
+                    id = transaction['id']
+                    yield Transaction(**transaction)
+                if len(data['transactions']) == PAGINATION_LIMIT:
+                    data = await self.make_request("GET", f"/transactions?account_id={account_id}&since={id}&limit={PAGINATION_LIMIT}")
+                else:
+                    break
+        except KeyError:
+            _LOGGER.error("Failed to get transactions from Monzo API: %s", str(data))
+            _raise_auth_or_response_error(data)
 
     async def get_webhooks(self, account_id: str):
         data = await self.make_request("GET", f"webhooks?account_id={account_id}")

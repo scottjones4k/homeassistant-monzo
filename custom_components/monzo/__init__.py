@@ -18,6 +18,7 @@ from .const import DOMAIN, WEBHOOK_UPDATE
 from .monzo import AsyncConfigEntryAuth
 from .monzo_data import MonzoData
 from .monzo_update_coordinator import MonzoUpdateCoordinator
+from .monzo_category_update_coordinator import MonzoCategoryUpdateCoordinator
 from .services import setup_services
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.EVENT]
@@ -60,8 +61,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await coordinator.async_config_entry_first_refresh()
 
+    account_ids = [idx for idx, ent in coordinator.data.items() if idx.startswith("acc")]
+    
+    category_coordinator = MonzoCategoryUpdateCoordinator(hass, client, account_ids)
+
+    await category_coordinator.async_config_entry_first_refresh()
+
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
-        "coordinator": coordinator
+        "coordinator": coordinator,
+        "category_coordinator": category_coordinator
     }
 
     if CONF_WEBHOOK_ID not in entry.data:
@@ -73,10 +81,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass, DOMAIN, "Monzo", entry.data[CONF_WEBHOOK_ID], handle_webhook
     )
     
-    for idx, ent in coordinator.data.items():
-        if idx.startswith("acc"):
-            await coordinator.register_webhook(idx, webhook_url)
-            _LOGGER.info("Registered Monzo account webhook: %s : %s", idx, webhook_url)
+    for idx in account_ids:
+        await coordinator.register_webhook(idx, webhook_url)
+        _LOGGER.info("Registered Monzo account webhook: %s : %s", idx, webhook_url)
     _LOGGER.info("Registered HASS Monzo webhook: %s", webhook_url)
 
     setup_services(hass, entry)

@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Dict
 from pydantic import BaseModel
 
 class Metadata(BaseModel):
@@ -28,6 +28,8 @@ class Transaction(BaseModel):
     currency: str
     created: str
     id: str
+    decline_reason: str | None = None
+    categories: Dict[str, int] | None = None
 
 class TransactionWrapper(BaseModel):
     type: Literal["transaction.created", "transaction.updated"]

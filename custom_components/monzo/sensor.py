@@ -28,6 +28,7 @@ from .const import (
 
 from .api.models.balance import Balance
 from .monzo_update_coordinator import MonzoUpdateCoordinator
+from .monzo_category_update_coordinator import MonzoCategoryUpdateCoordinator
 from .entity import MonzoBaseEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -91,6 +92,18 @@ POT_SENSORS = (
     ),
 )
 
+CATEGORY_SENSORS = (
+    MonzoSensorEntityDescription(
+        key="category_spend",
+        translation_key="category_spend",
+        value_fn=lambda data: data / -100,
+        resets_daily=False,
+        device_class=SensorDeviceClass.MONETARY,
+        native_unit_of_measurement="GBP",
+        suggested_display_precision=2,
+    ),
+)
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
@@ -98,6 +111,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up Monzo sensor platform."""
     coordinator: MonzoUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
+    category_coordinator: MonzoCategoryUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]["category_coordinator"]
 
     await coordinator.async_config_entry_first_refresh()
 
@@ -121,11 +135,17 @@ async def async_setup_entry(
         for entity_description in POT_SENSORS
         for index, _pot in coordinator.data.items() if index.startswith("pot")
     ]
+
+    categories = [
+        MonzoSensor(category_coordinator, entity_description, category, "Category")
+        for entity_description in POT_SENSORS
+        for category in category_coordinator.data
+    ]
     # async_add_entities(
     #     SpendTodaySensor(coordinator, idx) for idx, ent in coordinator.data.items() if idx.startswith("acc")
     # )
 
-    async_add_entities(accounts + pots) 
+    async_add_entities(accounts + pots + categories) 
     
     platform = entity_platform.async_get_current_platform()
 

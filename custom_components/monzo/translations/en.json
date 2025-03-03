@@ -49,6 +49,10 @@
     "update": {
       "name": "Update entities",
       "description": "Updates all entities"
+    },
+    "category_update": {
+      "name": "Update categories",
+      "description": "Updates all categories"
     }
   },
   "entity": {

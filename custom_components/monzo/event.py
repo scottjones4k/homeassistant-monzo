@@ -146,5 +146,8 @@ def map_transaction(coordinator: MonzoUpdateCoordinator, transaction: Transactio
         'Is Bill Payment': transaction.metadata.trigger == 'committed_spending',
         'Pot Id': pot_id,
         'Pot Name': pot_name,
-        'Counterparty': counterparty
+        'Counterparty': counterparty,
+        'Declined': transaction.decline_reason is not None,
+        'Decline Reason': transaction.decline_reason,
+        'Categories': transaction.categories
     }
