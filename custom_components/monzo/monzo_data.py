@@ -1,3 +1,6 @@
+from typing import AsyncIterator
+
+from .api.models.transaction import Transaction
 from .const import API_ENDPOINT
 from .monzo import AbstractAuth
 from .api.client import MonzoClient
@@ -30,6 +33,9 @@ class MonzoData:
 
     async def async_update_balance_for_account(self, account_id):
         return await self._monzo_client.get_balance(account_id)
+    
+    async def async_get_transactions(self, account_id, start_date) -> AsyncIterator[Transaction]:
+        return await self._monzo_client.async_get_transactions(account_id, start_date)
 
     async def async_update_pots_for_account(self, account_id):
         return await self._monzo_client.get_pots(account_id)

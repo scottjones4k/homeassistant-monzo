@@ -58,7 +58,7 @@ class MonzoCategoryUpdateCoordinator(DataUpdateCoordinator):
             twenty_eighth = date.today().replace(day=28)
             if date.today() < twenty_eighth:
                 twenty_eighth = twenty_eighth.replace(month=twenty_eighth.month-1)
-            data: AsyncIterator[Transaction] = await self._monzo_client.async_get_transactions(self._accountIds[0], twenty_eighth)
+            data = await self._monzo_client.async_get_transactions(self._accountIds[0], twenty_eighth)
             return reduce(reduce_transactions, data)
         # except ApiAuthError as err:
         #     # Raising ConfigEntryAuthFailed will cancel future updates
