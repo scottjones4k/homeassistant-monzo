@@ -73,6 +73,9 @@
       },
       "spend_today": {
         "name": "Spend Today"
+      },
+      "category_spend": {
+        "name": "Category Spend"
       }
     }
   }
