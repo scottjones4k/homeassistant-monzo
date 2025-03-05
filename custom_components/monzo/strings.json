@@ -75,7 +75,10 @@
           "name": "Spend Today"
         },
         "category_spend": {
-          "name": "Category Spend"
+          "name": "Total Spend"
+        },
+        "category_remaining": {
+          "name": "Remaining"
         }
       }
     }

@@ -102,6 +102,15 @@ CATEGORY_SENSORS = (
         native_unit_of_measurement="GBP",
         suggested_display_precision=2,
     ),
+    MonzoSensorEntityDescription(
+        key="category_remaining",
+        translation_key="category_remaining",
+        value_fn=lambda data: data.target - data.amount / 100,
+        resets_daily=False,
+        device_class=SensorDeviceClass.MONETARY,
+        native_unit_of_measurement="GBP",
+        suggested_display_precision=2,
+    ),
 )
 
 async def async_setup_entry(
