@@ -139,7 +139,8 @@ async def async_setup_entry(
     categories = [
         MonzoSensor(category_coordinator, entity_description, category, "Category")
         for entity_description in CATEGORY_SENSORS
-        for category in category_coordinator.data
+        for category, _details in category_coordinator.CATEGORY_LIST.items()
+        # for category in category_coordinator.data
     ]
     # async_add_entities(
     #     SpendTodaySensor(coordinator, idx) for idx, ent in coordinator.data.items() if idx.startswith("acc")
