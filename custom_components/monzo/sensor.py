@@ -28,7 +28,7 @@ from .const import (
 
 from .api.models.balance import Balance
 from .monzo_update_coordinator import MonzoUpdateCoordinator
-from .monzo_category_update_coordinator import Category, MonzoCategoryUpdateCoordinator
+from .monzo_category_update_coordinator import CATEGORY_LIST, Category, MonzoCategoryUpdateCoordinator
 from .entity import MonzoBaseEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -139,7 +139,7 @@ async def async_setup_entry(
     categories = [
         MonzoSensor(category_coordinator, entity_description, category, "Category")
         for entity_description in CATEGORY_SENSORS
-        for category, _details in category_coordinator.CATEGORY_LIST.items()
+        for category, _details in CATEGORY_LIST.items()
         # for category in category_coordinator.data
     ]
     # async_add_entities(
