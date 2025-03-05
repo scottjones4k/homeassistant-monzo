@@ -90,13 +90,14 @@ class MonzoCategoryUpdateCoordinator(DataUpdateCoordinator):
                 twenty_eighth = twenty_eighth.replace(month=twenty_eighth.month-1)
             data = self._monzo_client.async_get_transactions(self._accountIds[0], twenty_eighth)
             categories: dict[str, Category] = {}
+            for category, _details in CATEGORY_LIST.items():
+                categories[category] = Category(category, 0)
             async for transaction in data:
                 if transaction.decline_reason is None:
                     for category, amount in transaction.categories.items():
                         if category in CATEGORY_LIST:
-                            if category not in categories:
-                                categories[category] = Category(category, 0)
-                            categories[category].amount += amount
+                            if category in categories:
+                                categories[category].amount += amount
             return categories
         # except ApiAuthError as err:
         #     # Raising ConfigEntryAuthFailed will cancel future updates
