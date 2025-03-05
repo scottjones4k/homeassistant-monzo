@@ -110,4 +110,4 @@ class MonzoCategoryUpdateCoordinator(DataUpdateCoordinator):
         if not sem.locked():
             async with sem:
                 data = await self._async_update_data()
-                await self.async_set_updated_data(data)
+                self.async_set_updated_data(data)
