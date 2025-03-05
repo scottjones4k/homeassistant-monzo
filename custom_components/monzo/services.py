@@ -14,11 +14,11 @@ SERVICE_UPDATE_SCHEMA = vol.Schema(
 def setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Set up the services for the Monzo integration."""
 
-    async def update():
+    async def update(_call):
         coordinator: MonzoUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
         await coordinator.async_force_update()
 
-    async def category_update():
+    async def category_update(_call):
         coordinator: MonzoCategoryUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]["category_coordinator"]
         await coordinator.async_force_update()
 
