@@ -34,10 +34,10 @@ CATEGORY_LIST = {
     'category_0000AffrfoYAoCtlFwBOb3': ('Rowan', 100),
     'category_0000AfMkAV0f1Efrz82aWX': ('Parking', 72),
     'category_0000AfMkEkgEhLWktFgQp0': ('Work', 50),
-    'category_0000Ajn5JWbJo5vXQDm0DB': ('Pets', 50),
-    'eating_out': ('Eating Out', 60),
+    'category_0000Ajn5JWbJo5vXQDm0DB': ('Pets', 60),
+    'eating_out': ('Eating Out', 100),
     # ('entertainment', 'Entertainment'),
-    'groceries': ('Groceries', 650)
+    'groceries': ('Groceries', 500)
     # ('income', 'Income'),
     # ('savings', 'Savings'),
     # ('shopping', 'Shopping'),
