@@ -28,16 +28,17 @@ def reduce_transactions(a: dict[str, int], b: Transaction) -> dict[str, int]:
     return a
 
 CATEGORY_LIST = {
-    'category_0000AgJVm8aomFv6bdeQrp': ('Days Out', 100),
-    'category_0000AqK42MhFy0wyBj8dkI': ('Medication', 100),
+    'category_0000AgJVm8aomFv6bdeQrp': ('Days Out', 50),
+    'category_0000AqK42MhFy0wyBj8dkI': ('Medication', 115),
     # ('category_0000AfcPM8zPj3J2gow1C5', 'Debt Repayment'),
-    'category_0000AffrfoYAoCtlFwBOb3': ('Rowan', 100),
-    'category_0000AfMkAV0f1Efrz82aWX': ('Parking', 72),
+    'category_0000AffrfoYAoCtlFwBOb3': ('Rowan', 50),
+    'category_0000AfMkAV0f1Efrz82aWX': ('Parking', 52),
     'category_0000AfMkEkgEhLWktFgQp0': ('Work', 50),
     'category_0000Ajn5JWbJo5vXQDm0DB': ('Pets', 60),
-    'eating_out': ('Eating Out', 100),
+    'category_0000Afisw7e6GKRzcBBpWT': ('Home', 50),
+    'eating_out': ('Eating Out', 230),
     # ('entertainment', 'Entertainment'),
-    'groceries': ('Groceries', 500)
+    'groceries': ('Groceries', 400)
     # ('income', 'Income'),
     # ('savings', 'Savings'),
     # ('shopping', 'Shopping'),
